@@ -1,0 +1,77 @@
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
+}
+
+android {
+    namespace = "com.example.moodymusicforandroid.commonbase"
+    compileSdk = 36
+
+    defaultConfig {
+        minSdk = 24
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    buildFeatures {
+        buildConfig = true
+        dataBinding = true
+    }
+}
+
+dependencies {
+    // ========== API 依赖（暴露给 app 模块） ==========
+
+    // AndroidX Lifecycle - BaseViewModel 和 BaseActivity 需要
+    api(libs.androidx.lifecycle.runtime.ktx)
+    api(libs.androidx.lifecycle.viewmodel.ktx)
+    api(libs.androidx.lifecycle.livedata.ktx)
+
+    // Kotlin Coroutines - BaseViewModel 的 request() 方法需要
+    api(libs.kotlinx.coroutines.core)
+    api(libs.kotlinx.coroutines.android)
+
+    // 网络库 - API 层需要
+    api(libs.retrofit)
+    api(libs.retrofit.converter.gson)
+    api(libs.okhttp)
+    api(libs.okhttp.logging.interceptor)
+    api(libs.gson)
+
+    // Room - 数据模型可能使用
+    api(libs.room.runtime)
+    api(libs.room.ktx)
+
+    // 图片加载 - Glide
+    api(libs.glide)
+
+    // EventBus - 事件总线
+    api(libs.eventbus)
+
+    // RecyclerView - BaseRecyclerViewAdapterHelper
+    api(libs.base.adapter.helper)
+
+    // ========== Implementation 依赖（仅内部使用） ==========
+
+    // AndroidX 核心
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+
+    // Material & UI - DataBinding 需要
+    implementation(libs.androidx.material)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.recyclerview)
+
+    // 测试
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+}

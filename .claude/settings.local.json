@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gradlew.bat:*)",
+      "mcp__zread__get_repo_structure",
+      "Bash(findstr:*)",
+      "Bash(dir:*)",
+      "Bash(if not exist \"D:\\\\PersonalProject\\\\MoodyMusicForAndroid\\\\commonbase\" mkdir \"D:\\\\PersonalProject\\\\MoodyMusicForAndroid\\\\commonbase\")",
+      "Bash(./gradlew:*)",
+      "Bash(gradlew:*)",
+      "WebSearch",
+      "Bash(del:*)",
+      "mcp__web-search-prime__web_search_prime",
+      "mcp__web-reader__webReader",
+      "mcp__zread__read_file",
+      "Bash(git init:*)",
+      "Bash(git remote add origin https://github.com/zhangjing02/MoodyMusicForAndroid.git:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

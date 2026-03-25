@@ -1,0 +1,98 @@
+[versions]
+# 更新于 2025-03-25
+agp = "8.10.1"           # Android Gradle Plugin - 从 8.9.1 升级到 8.10.1 (2025年5月最新稳定版)
+kotlin = "2.1.0"          # Kotlin - 保持 2.1.0 (已是稳定版本)
+
+# AndroidX
+coreKtx = "1.15.0"        # 保持 1.15.0 (已是最新稳定版)
+appcompat = "1.7.0"       # 保持 1.7.0 (已是最新稳定版)
+material = "1.12.0"       # 保持 1.12.0 (已是最新稳定版)
+constraintlayout = "2.2.0" # 保持 2.2.0 (已是最新稳定版)
+
+# Lifecycle
+lifecycle = "2.8.7"       # 保持 2.8.7 (已是最新稳定版)
+
+# Coroutines
+coroutines = "1.9.0"      # 保持 1.9.0 (已是最新稳定版)
+
+# Network - 重要更新！
+retrofit = "2.11.0"       # 从 2.9.0 升级到 2.11.0 (重要更新)
+okhttp = "4.12.0"         # 从 4.11.0 升级到 4.12.0 (Kotlin版本)
+gson = "2.11.0"           # 从 2.10.1 升级到 2.11.0
+
+# Image Loading
+glide = "4.16.0"          # 保持 4.16.0 (已是最新稳定版)
+
+# RecyclerView
+recyclerview = "1.3.2"      # AndroidX RecyclerView
+baseRecyclerViewAdapterHelper = "4.1.4"  # BRVAH - 强大的 RecyclerView 适配器库
+
+# EventBus
+eventbus = "3.3.1"        # 保持 3.3.1 (已是最新稳定版)
+
+# Database
+room = "2.6.1"            # 保持 2.6.1 (已是最新稳定版)
+
+# UI Widget Helper
+rwidgetHelper = "androidx.v0.0.14"  # RWidgetHelper - UI控件辅助库（圆角、边框、渐变、状态切换）
+
+# Testing
+junit = "4.13.2"          # 保持 4.13.2 (仍是最新稳定版)
+junitVersion = "1.2.1"    # 保持 1.2.1 (仍是最新稳定版)
+espressoCore = "3.6.1"    # 保持 3.6.1 (仍是最新稳定版)
+
+[libraries]
+# AndroidX Core
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+
+# Material & UI
+androidx-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
+
+# Lifecycle
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
+androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle" }
+
+# Coroutines
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+
+# Network
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+okhttp-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+
+# Image Loading
+glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
+glide-compiler = { group = "com.github.bumptech.glide", name = "compiler", version.ref = "glide" }
+
+# RecyclerView - BaseRecyclerViewAdapterHelper
+base-adapter-helper = { group = "io.github.cymchad", name = "BaseRecyclerViewAdapterHelper4", version.ref = "baseRecyclerViewAdapterHelper" }
+
+# EventBus
+eventbus = { group = "org.greenrobot", name = "eventbus", version.ref = "eventbus" }
+
+# Database
+room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+
+# UI Widget Helper
+rwidget-helper = { group = "com.github.RuffianZhong", name = "RWidgetHelper", version.ref = "rwidgetHelper" }
+
+# Testing
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version = "2.1.0-1.0.29" }
+
