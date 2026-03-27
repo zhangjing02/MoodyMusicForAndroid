@@ -49,7 +49,11 @@
 
     <!-- Semi-transparent overlays -->
     <color name="surface_overlay_80">#CCF8FAF8</color>
+    <color name="surface_overlay_85">#D9F8FAF8</color>
     <color name="surface_overlay_90">#E6F8FAF8</color>
     <color name="primary_shadow">#3334614d</color>
+
+    <!-- Frosted glass overlay -->
+    <color name="frosted_glass_background">#CCF8FAF8</color>
 
 </resources>

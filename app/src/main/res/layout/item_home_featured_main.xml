@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cvFeaturedMain"
+    android:layout_width="match_parent"
+    android:layout_height="240dp"
+    android:layout_marginStart="24dp"
+    android:layout_marginEnd="24dp"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="@color/surface_container_low"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp"
+    android:clickable="true"
+    android:focusable="true">
+
+    <ImageView
+        android:id="@+id/ivFeaturedMain"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:alpha="0.9"
+        android:contentDescription="Featured"
+        tools:src="@drawable/ic_home" />
+
+    <!-- Gradient overlay will be set programmatically using RWidgetHelper -->
+    <View
+        android:id="@+id/vGradientOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:gravity="bottom">
+
+        <TextView
+            android:id="@+id/tvFeaturedTag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="今日推荐"
+            android:textAppearance="@style/TextAppearance.Moody.LabelSmall"
+            android:textColor="@color/on_tertiary"
+            android:layout_marginBottom="10dp" />
+
+        <TextView
+            android:id="@+id/tvFeaturedCardTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="山间雾起时"
+            android:textAppearance="@style/TextAppearance.Moody.TitleMedium"
+            android:textColor="@color/white"
+            android:letterSpacing="0"
+            android:layout_marginBottom="6dp" />
+
+        <TextView
+            android:id="@+id/tvFeaturedDesc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="白噪音与长笛的对话，带你重返大自然的呼吸频率。"
+            android:textAppearance="@style/TextAppearance.Moody.BodySmall"
+            android:textColor="@color/white"
+            android:alpha="0.9"
+            android:lineSpacingExtra="2dp"
+            android:maxLines="2"
+            android:ellipsize="end" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

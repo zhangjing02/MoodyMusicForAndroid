@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TopBar毛玻璃效果背景 - 超淡半透明 -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 超淡半透明背景 - 从顶部67%透明渐变到底部40%透明 -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="90"
+                android:startColor="#AAF8FAF8"
+                android:endColor="#66F8FAF8"
+                android:type="linear" />
+        </shape>
+    </item>
+
+    <!-- 底部超淡渐变阴影 -->
+    <item android:height="2dp" android:gravity="bottom">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="90"
+                android:startColor="#00000000"
+                android:endColor="#10000000"
+                android:type="linear" />
+        </shape>
+    </item>
+
+</layer-list>

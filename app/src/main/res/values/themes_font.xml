@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        字体主题 - 为每种字体风格创建单独的主题
+        通过切换主题来应用不同的字体
+    -->
+
+    <!-- 手写飘逸风主题 - 使用霞鹜文楷 -->
+    <style name="Theme.MoodyMusicForAndroid.Handwriting" parent="Theme.MoodyMusicForAndroid">
+        <item name="android:textViewStyle">@style/TextViewFontHandwriting</item>
+    </style>
+
+    <style name="TextViewFontHandwriting" parent="android:Widget.TextView">
+        <item name="android:fontFamily">@font/lxgw_wenkai_gb_regular</item>
+    </style>
+
+    <!-- 现代轻盈风主题 - 使用思源宋体 -->
+    <style name="Theme.MoodyMusicForAndroid.Modern" parent="Theme.MoodyMusicForAndroid">
+        <item name="android:textViewStyle">@style/TextViewFontModern</item>
+    </style>
+
+    <style name="TextViewFontModern" parent="android:Widget.TextView">
+        <item name="android:fontFamily">@font/source_han_serif_sc_regular</item>
+    </style>
+
+    <!-- 清秀文艺风主题 - 使用思源宋体 -->
+    <style name="Theme.MoodyMusicForAndroid.Elegant" parent="Theme.MoodyMusicForAndroid">
+        <item name="android:textViewStyle">@style/TextViewFontElegant</item>
+    </style>
+
+    <style name="TextViewFontElegant" parent="android:Widget.TextView">
+        <item name="android:fontFamily">@font/source_han_serif_sc_regular</item>
+    </style>
+
+</resources>

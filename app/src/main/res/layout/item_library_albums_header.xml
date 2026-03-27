@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp"
+    android:layout_marginBottom="24dp">
+
+    <TextView
+        android:id="@+id/tvAlbumsTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="收藏专辑"
+        android:textSize="20sp"
+        android:textColor="@color/on_surface" />
+
+    <TextView
+        android:id="@+id/tvSeeAllAlbums"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="查看全部"
+        android:textSize="12sp"
+        android:textColor="@color/primary"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackgroundBorderless" />
+
+</LinearLayout>

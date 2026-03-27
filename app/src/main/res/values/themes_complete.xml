@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        完整主题颜色系统
+        包含4种主题的完整颜色定义
+    -->
+
+    <!-- ==================== 默认绿色主题 ==================== -->
+    <style name="Theme.MoodyMusicForAndroid.Green" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary Colors -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_container</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
+
+        <!-- Secondary Colors -->
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorOnSecondary">@color/on_secondary</item>
+
+        <!-- Tertiary Colors -->
+        <item name="colorTertiary">@color/tertiary</item>
+        <item name="colorOnTertiary">@color/on_tertiary</item>
+
+        <!-- Background Colors -->
+        <item name="android:colorBackground">@color/background</item>
+        <item name="colorOnBackground">@color/on_background</item>
+
+        <!-- Surface Colors -->
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/on_surface</item>
+
+        <!-- Error Colors -->
+        <item name="colorError">@color/error</item>
+        <item name="colorOnError">@color/on_error</item>
+    </style>
+
+    <!-- ==================== 海洋蓝色主题 ==================== -->
+    <style name="Theme.MoodyMusicForAndroid.Ocean" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary Colors - 海洋蓝 -->
+        <item name="colorPrimary">#2196F3</item>
+        <item name="colorPrimaryVariant">#BBDEFB</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+
+        <!-- Secondary Colors - 青色 -->
+        <item name="colorSecondary">#00BCD4</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+
+        <!-- Tertiary Colors -->
+        <item name="colorTertiary">#4DD0E1</item>
+        <item name="colorOnTertiary">#00363A</item>
+
+        <!-- Background Colors -->
+        <item name="android:colorBackground">#E3F2FD</item>
+        <item name="colorOnBackground">#001F3A</item>
+
+        <!-- Surface Colors -->
+        <item name="colorSurface">#FFFFFF</item>
+        <item name="colorOnSurface">#001F2A</item>
+
+        <!-- Error Colors -->
+        <item name="colorError">#B00020</item>
+        <item name="colorOnError">#FFFFFF</item>
+    </style>
+
+    <!-- ==================== 日落橙色主题 ==================== -->
+    <style name="Theme.MoodyMusicForAndroid.Sunset" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary Colors - 日落橙 -->
+        <item name="colorPrimary">#FF5722</item>
+        <item name="colorPrimaryVariant">#FFCCBC</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+
+        <!-- Secondary Colors -->
+        <item name="colorSecondary">#FF9800</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+
+        <!-- Tertiary Colors -->
+        <item name="colorTertiary">#FFB74D</item>
+        <item name="colorOnTertiary">#3E1508</item>
+
+        <!-- Background Colors -->
+        <item name="android:colorBackground">#FFF3E0</item>
+        <item name="colorOnBackground">#3E1610</item>
+
+        <!-- Surface Colors -->
+        <item name="colorSurface">#FFFFFF</item>
+        <item name="colorOnSurface">#3E1610</item>
+
+        <!-- Error Colors -->
+        <item name="colorError">#D32F2F</item>
+        <item name="colorOnError">#FFFFFF</item>
+    </style>
+
+    <!-- ==================== 暗夜紫色主题 ==================== -->
+    <style name="Theme.MoodyMusicForAndroid.Night" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary Colors - 暗夜紫 -->
+        <item name="colorPrimary">#9C27B0</item>
+        <item name="colorPrimaryVariant">#E1BEE7</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+
+        <!-- Secondary Colors -->
+        <item name="colorSecondary">#BA68C8</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+
+        <!-- Tertiary Colors -->
+        <item name="colorTertiary">#CE93D8</item>
+        <item name="colorOnTertiary">#240A37</item>
+
+        <!-- Background Colors - 深色背景 -->
+        <item name="android:colorBackground">#121212</item>
+        <item name="colorOnBackground">#E8E8E8</item>
+
+        <!-- Surface Colors -->
+        <item name="colorSurface">#1E1E1E</item>
+        <item name="colorOnSurface">#E8E8E8</item>
+
+        <!-- Error Colors -->
+        <item name="colorError">#CF6679</item>
+        <item name="colorOnError">#121212</item>
+    </style>
+
+    <!-- ==================== 组合主题（颜色 × 字体） ==================== -->
+    <!-- 12个组合主题：4种颜色 × 3种字体 -->
+
+    <!-- 默认绿色 + 手写飘逸 -->
+    <style name="Theme.MoodyMusicForAndroid.Green.Handwriting" parent="Theme.MoodyMusicForAndroid.Green">
+        <item name="android:textViewStyle">@style/TextViewFontHandwriting</item>
+    </style>
+
+    <!-- 默认绿色 + 现代轻盈 -->
+    <style name="Theme.MoodyMusicForAndroid.Green.Modern" parent="Theme.MoodyMusicForAndroid.Green">
+        <item name="android:textViewStyle">@style/TextViewFontModern</item>
+    </style>
+
+    <!-- 默认绿色 + 清秀文艺 -->
+    <style name="Theme.MoodyMusicForAndroid.Green.Elegant" parent="Theme.MoodyMusicForAndroid.Green">
+        <item name="android:textViewStyle">@style/TextViewFontElegant</item>
+    </style>
+
+    <!-- 海洋蓝 + 手写飘逸 -->
+    <style name="Theme.MoodyMusicForAndroid.Ocean.Handwriting" parent="Theme.MoodyMusicForAndroid.Ocean">
+        <item name="android:textViewStyle">@style/TextViewFontHandwriting</item>
+    </style>
+
+    <!-- 海洋蓝 + 现代轻盈 -->
+    <style name="Theme.MoodyMusicForAndroid.Ocean.Modern" parent="Theme.MoodyMusicForAndroid.Ocean">
+        <item name="android:textViewStyle">@style/TextViewFontModern</item>
+    </style>
+
+    <!-- 海洋蓝 + 清秀文艺 -->
+    <style name="Theme.MoodyMusicForAndroid.Ocean.Elegant" parent="Theme.MoodyMusicForAndroid.Ocean">
+        <item name="android:textViewStyle">@style/TextViewFontElegant</item>
+    </style>
+
+    <!-- 日落橙 + 手写飘逸 -->
+    <style name="Theme.MoodyMusicForAndroid.Sunset.Handwriting" parent="Theme.MoodyMusicForAndroid.Sunset">
+        <item name="android:textViewStyle">@style/TextViewFontHandwriting</item>
+    </style>
+
+    <!-- 日落橙 + 现代轻盈 -->
+    <style name="Theme.MoodyMusicForAndroid.Sunset.Modern" parent="Theme.MoodyMusicForAndroid.Sunset">
+        <item name="android:textViewStyle">@style/TextViewFontModern</item>
+    </style>
+
+    <!-- 日落橙 + 清秀文艺 -->
+    <style name="Theme.MoodyMusicForAndroid.Sunset.Elegant" parent="Theme.MoodyMusicForAndroid.Sunset">
+        <item name="android:textViewStyle">@style/TextViewFontElegant</item>
+    </style>
+
+    <!-- 暗夜紫 + 手写飘逸 -->
+    <style name="Theme.MoodyMusicForAndroid.Night.Handwriting" parent="Theme.MoodyMusicForAndroid.Night">
+        <item name="android:textViewStyle">@style/TextViewFontHandwriting</item>
+    </style>
+
+    <!-- 暗夜紫 + 现代轻盈 -->
+    <style name="Theme.MoodyMusicForAndroid.Night.Modern" parent="Theme.MoodyMusicForAndroid.Night">
+        <item name="android:textViewStyle">@style/TextViewFontModern</item>
+    </style>
+
+    <!-- 暗夜紫 + 清秀文艺 -->
+    <style name="Theme.MoodyMusicForAndroid.Night.Elegant" parent="Theme.MoodyMusicForAndroid.Night">
+        <item name="android:textViewStyle">@style/TextViewFontElegant</item>
+    </style>
+
+</resources>

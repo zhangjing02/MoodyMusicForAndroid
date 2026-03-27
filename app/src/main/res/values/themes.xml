@@ -27,13 +27,22 @@
         <item name="colorError">@color/error</item>
         <item name="colorOnError">@color/on_error</item>
 
+        <!-- Typography System - 默认使用霞鹜文楷作为手写字体 -->
+        <item name="android:fontFamily">@font/lxgw_wenkai_gb_regular</item>
+        <item name="android:textViewStyle">@style/MoodyTextViewStyle</item>
+
         <!-- Status Bar -->
-        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:statusBarColor">@color/surface_overlay_80</item>
         <item name="android:windowLightStatusBar">true</item>
 
         <!-- Navigation Bar -->
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightNavigationBar">true</item>
+    </style>
+
+    <!-- 默认TextView样式 - 使用霞鹜文楷 -->
+    <style name="MoodyTextViewStyle" parent="android:Widget.TextView">
+        <item name="android:fontFamily">@font/lxgw_wenkai_gb_regular</item>
     </style>
 
     <!-- Button Styles -->
