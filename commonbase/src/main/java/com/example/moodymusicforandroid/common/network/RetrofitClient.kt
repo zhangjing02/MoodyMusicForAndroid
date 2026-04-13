@@ -1,11 +1,23 @@
 package com.example.moodymusicforandroid.common.network
 
+import okhttp3.Authenticator
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import okhttp3.Route
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
+import com.example.moodymusicforandroid.common.preferences.PreferencesManager
+import com.example.moodymusicforandroid.data.api.MoodyApiService
+import com.example.moodymusicforandroid.data.model.RefreshTokenRequest
+import com.example.moodymusicforandroid.data.model.User
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
 
 /**
  * Retrofit客户端
@@ -44,33 +56,101 @@ object RetrofitClient {
             .header("Accept", "application/json")
             .header("User-Agent", "MoodyMusicAndroid/1.0")
 
-        // TODO: 如果有 Token，可以在这里统一添加
-        // val token = PreferencesManager.getUserToken()
-        // if (token.isNotEmpty()) {
-        //     requestBuilder.header("Authorization", "Bearer $token")
-        // }
+        // 添加 Token（如果已登录）
+        try {
+            val token = com.example.moodymusicforandroid.common.preferences.PreferencesManager.getUserToken()
+            if (!token.isNullOrEmpty()) {
+                requestBuilder.header("Authorization", "Bearer $token")
+            }
+        } catch (e: Exception) {
+            // PreferencesManager 未初始化时忽略
+        }
 
         chain.proceed(requestBuilder.build())
     }
 
     /**
+     * Token 自动刷新器
+     * 当收到 401 响应时触发
+     */
+    private val tokenAuthenticator = Authenticator { _, response ->
+        synchronized(this) {
+            val refreshToken = PreferencesManager.getUserRefreshToken()
+            if (refreshToken.isNullOrEmpty()) return@Authenticator null
+
+            // 获取最新的 Token，防止多个并发请求重复触发刷新
+            val currentToken = PreferencesManager.getUserToken()
+            if (response.request.header("Authorization") != "Bearer $currentToken") {
+                // 如果当前请求的 Token 已经不是最新的了，说明已经刷新过了，直接重试
+                return@Authenticator response.request.newBuilder()
+                    .header("Authorization", "Bearer $currentToken")
+                    .build()
+            }
+
+            // 同步执行刷新请求
+            try {
+                // 这里使用一个新的 OkHttp 客户端来执行刷新请求，避免拦截器递归
+                val refreshClient = OkHttpClient.Builder().build()
+                val requestBody = Gson().toJson(RefreshTokenRequest(refreshToken))
+                    .toRequestBody("application/json".toMediaTypeOrNull())
+                val refreshRequest = Request.Builder()
+                    .url("${BASE_URL}api/user/refresh")
+                    .post(requestBody)
+                    .build()
+
+                val refreshResponse = refreshClient.newCall(refreshRequest).execute()
+                if (refreshResponse.isSuccessful) {
+                    val bodyString = refreshResponse.body?.string()
+                    val type = object : TypeToken<BaseResponse<User>>() {}.type
+                    val result: BaseResponse<User> = Gson().fromJson(bodyString, type)
+                    val userData = result.data
+
+                    if (userData?.token != null) {
+                        PreferencesManager.saveUserToken(userData.token)
+                        userData.refreshToken?.let { PreferencesManager.saveUserRefreshToken(it) }
+
+                        return@Authenticator response.request.newBuilder()
+                            .header("Authorization", "Bearer ${userData.token}")
+                            .build()
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            // 刷新失败，清除登录状态
+            PreferencesManager.clearUserInfo()
+            null
+        }
+    }
+
+    /**
      * 重试拦截器
-     * 对失败的请求进行自动重试
+     * 对失败的网络连接进行重试（非业务逻辑错误）
      */
     private val retryInterceptor = Interceptor { chain ->
         val originalRequest = chain.request()
-        var response = chain.proceed(originalRequest)
-        var retryCount = 0
-        val maxRetryCount = 3
-
-        // 如果响应失败，进行重试
-        while (!response.isSuccessful && retryCount < maxRetryCount) {
-            retryCount++
-            response.close()
-            response = chain.proceed(originalRequest)
+        var response = try {
+            chain.proceed(originalRequest)
+        } catch (e: Exception) {
+            null
         }
 
-        response
+        var retryCount = 0
+        val maxRetryCount = 2
+
+        // 仅在网络异常（response == null）或 5xx 服务错误时重试
+        while ((response == null || (response.code in 500..599)) && retryCount < maxRetryCount) {
+            retryCount++
+            response?.close()
+            response = try {
+                chain.proceed(originalRequest)
+            } catch (e: Exception) {
+                null
+            }
+        }
+
+        response ?: throw java.io.IOException("Network request failed after retries")
     }
 
     // OkHttp客户端
@@ -78,6 +158,7 @@ object RetrofitClient {
         .addInterceptor(headerInterceptor)           // 请求头拦截器
         .addInterceptor(retryInterceptor)            // 重试拦截器
         .addInterceptor(loggingInterceptor)          // 日志拦截器
+        .authenticator(tokenAuthenticator)           // 自动刷新拦截器
         .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
         .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
         .writeTimeout(WRITE_TIMEOUT, TimeUnit.SECONDS)

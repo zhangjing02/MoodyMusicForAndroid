@@ -9,17 +9,25 @@ import android.widget.RadioGroup
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import android.content.Intent
 import com.example.moodymusicforandroid.MoodyMusicApplication
 import com.example.moodymusicforandroid.R
 import com.example.moodymusicforandroid.base.BaseActivity
+import com.example.moodymusicforandroid.common.eventbus.BaseEvent
+import com.example.moodymusicforandroid.common.eventbus.EventBusManager
+import com.example.moodymusicforandroid.common.eventbus.EventType
+import com.example.moodymusicforandroid.common.preferences.PreferencesManager
 import com.example.moodymusicforandroid.common.utils.FontManager
 import com.example.moodymusicforandroid.common.utils.ThemeManager
 import com.example.moodymusicforandroid.databinding.ActivityMainBinding
 import com.example.moodymusicforandroid.databinding.NavigationDrawerBinding
+import com.example.moodymusicforandroid.ui.classroom.activity.ClassroomActivity
 import com.example.moodymusicforandroid.ui.home.DiscoverFragment
 import com.example.moodymusicforandroid.ui.home.HomeFragment
 import com.example.moodymusicforandroid.ui.home.LibraryFragment
 import com.example.moodymusicforandroid.ui.home.viewmodel.MainViewModel
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 /**
  * 主Activity
@@ -51,6 +59,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
         setupBottomNavigation()
         setupDrawer()
         setupThemeAndFont()
+        updateUserInfoUI() // 初始化用户信息显示
     }
 
     /**
@@ -121,6 +130,20 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
         // 关闭按钮点击关闭抽屉
         drawerBinding.ivCloseDrawer.setOnClickListener {
             binding.drawerLayout.closeDrawer(GravityCompat.START)
+        }
+
+        // 教室认证点击
+        drawerBinding.btnClassroomAuth.setOnClickListener {
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
+            startActivity(Intent(this, ClassroomActivity::class.java))
+        }
+
+        // 注销点击
+        drawerBinding.btnLogout.setOnClickListener {
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
+            PreferencesManager.clearUserInfo()
+            EventBusManager.post(EventType.USER_LOGOUT, "用户退出登录")
+            showToast("已退出当前认证")
         }
 
         // 点击抽屉外部区域关闭抽屉
@@ -199,6 +222,37 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
         }
     }
 
+    override fun useEventBus() = true
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    override fun onEventReceived(event: BaseEvent) {
+        super.onEventReceived(event)
+        when (event.eventType) {
+            EventType.USER_LOGIN, EventType.USER_LOGOUT -> {
+                updateUserInfoUI()
+            }
+        }
+    }
+
+    /**
+     * 更新侧边栏用户信息
+     */
+    private fun updateUserInfoUI() {
+        if (PreferencesManager.isLoggedIn()) {
+            val userName = PreferencesManager.getUserName() ?: "同学"
+            drawerBinding.tvDrawerSubtitle.text = "欢迎回来，$userName"
+            drawerBinding.btnClassroomAuth.text = "已认证"
+            // 已认证状态下禁用认证按钮，显示注销按钮
+            drawerBinding.btnClassroomAuth.isEnabled = false
+            drawerBinding.btnLogout.visibility = View.VISIBLE
+        } else {
+            drawerBinding.tvDrawerSubtitle.text = "听，风吹过的声音"
+            drawerBinding.btnClassroomAuth.text = getString(R.string.classroom_auth)
+            drawerBinding.btnClassroomAuth.isEnabled = true
+            drawerBinding.btnLogout.visibility = View.GONE
+        }
+    }
+
     private fun updateTitle(title: String) {
         binding.tvTitle.text = title
     }
@@ -219,8 +273,10 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
 
     override fun initData() {
         super.initData()
-        // 初始化数据
-        viewModel.loadWelcomeMessage()
+        // 观察头像点击跳转认证页
+        binding.cvAvatar.setOnClickListener {
+            startActivity(Intent(this, ClassroomActivity::class.java))
+        }
     }
 
     override fun onDestroy() {

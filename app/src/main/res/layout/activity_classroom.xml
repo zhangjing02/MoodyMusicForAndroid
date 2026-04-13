@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/classroom_bg_dark"
+        tools:context=".ui.classroom.activity.ClassroomActivity">
+
+        <!-- Header: Class Title -->
+        <TextView
+            android:id="@+id/tvClassHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/classroom_header_default"
+            android:textColor="#80FFFFFF"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Blackboard Section -->
+        <FrameLayout
+            android:id="@+id/layoutBlackboard"
+            android:layout_width="0dp"
+            android:layout_height="160dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_blackboard_frame"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvClassHeader">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <TextView
+                    android:id="@+id/tvBlackboardTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/blackboard_title_main"
+                    android:textColor="@color/classroom_chalk_white"
+                    android:textSize="22sp"
+                    android:textStyle="normal" />
+
+                <TextView
+                    android:id="@+id/tvBlackboardHint"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:alpha="0.7"
+                    android:text="@string/blackboard_hint_claim"
+                    android:textColor="@color/classroom_chalk_white"
+                    android:textSize="11sp" />
+
+                <!-- Claiming Status Capsuls Inside Blackboard -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvClaimedCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textColor="@color/classroom_gold_label"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:text="@string/label_claimed"
+                        android:textColor="@color/classroom_gold_label"
+                        android:textSize="10sp" />
+
+                    <TextView
+                        android:id="@+id/tvTotalCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:text="40"
+                        android:textColor="@color/classroom_gold_label"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:text="@string/label_total"
+                        android:textColor="@color/classroom_gold_label"
+                        android:textSize="10sp" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </FrameLayout>
+
+        <!-- Wooden Platform (讲台) -->
+        <TextView
+            android:id="@+id/tvPlatform"
+            android:layout_width="120dp"
+            android:layout_height="32dp"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/bg_desk_wood"
+            android:gravity="center"
+            android:paddingBottom="4dp"
+            android:text="@string/platform_label"
+            android:textColor="@color/classroom_wood_shadow"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layoutBlackboard" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="@string/platform_teacher_hint"
+            android:textColor="#50FFFFFF"
+            android:textSize="9sp"
+            app:layout_constraintEnd_toEndOf="@id/tvPlatform"
+            app:layout_constraintStart_toStartOf="@id/tvPlatform"
+            app:layout_constraintTop_toBottomOf="@id/tvPlatform" />
+
+        <!-- Seats Full-Class View (Horizontal Scan + Vertical Scroll) -->
+        <com.example.moodymusicforandroid.ui.classroom.view.ClassroomScrollContainer
+            android:id="@+id/hsvClassroom"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="16dp"
+            android:scrollbars="none"
+            android:overScrollMode="never"
+            app:layout_constraintBottom_toTopOf="@id/layoutLegend"
+            app:layout_constraintTop_toBottomOf="@id/tvPlatform">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvSeats"
+                android:layout_width="800dp"
+                android:layout_height="match_parent"
+                android:paddingHorizontal="12dp"
+                android:paddingBottom="80dp"
+                android:clipToPadding="false"
+                tools:listitem="@layout/item_seat"
+                tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                tools:spanCount="8" />
+        </com.example.moodymusicforandroid.ui.classroom.view.ClassroomScrollContainer>
+
+        <!-- Top Indicator Bar (Decorative Red/Blue/Gray) -->
+        <LinearLayout
+            android:id="@+id/layoutIndicator"
+            android:layout_width="60dp"
+            android:layout_height="4dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal"
+            app:layout_constraintStart_toStartOf="@id/layoutBlackboard"
+            app:layout_constraintTop_toBottomOf="@id/layoutBlackboard">
+            <View android:layout_width="12dp" android:layout_height="match_parent" android:background="#8C4D4D" android:layout_marginEnd="4dp" />
+            <View android:layout_width="12dp" android:layout_height="match_parent" android:background="#628C4D" android:layout_marginEnd="4dp" />
+            <View android:layout_width="12dp" android:layout_height="match_parent" android:background="#4D628C" />
+        </LinearLayout>
+
+        <!-- Legend (Legend area at bottom) -->
+        <LinearLayout
+            android:id="@+id/layoutLegend"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:layout_marginBottom="24dp"
+            android:background="@drawable/bg_stat_capsule"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <View
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:background="@color/classroom_wood_bright" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text="@string/status_unclaimed"
+                android:textColor="#A0FFFFFF"
+                android:textSize="10sp" />
+
+            <View
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:layout_marginStart="20dp"
+                android:background="#406040" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text="@string/label_claimed"
+                android:textColor="#A0FFFFFF"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <!-- Back Button Overlay -->
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_margin="12dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:src="@drawable/ic_back"
+            android:tint="#80FFFFFF"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

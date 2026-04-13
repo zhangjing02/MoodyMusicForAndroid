@@ -2,6 +2,7 @@ package com.example.moodymusicforandroid
 
 import android.app.Application
 import com.example.moodymusicforandroid.common.preferences.PreferencesManager
+
 import com.example.moodymusicforandroid.common.utils.FontManager
 import com.example.moodymusicforandroid.common.utils.ThemeManager
 

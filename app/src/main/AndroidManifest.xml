@@ -34,6 +34,13 @@
             android:exported="true"
             android:label="API 测试"
             android:theme="@style/Theme.MoodyMusicForAndroid" />
+
+        <activity
+            android:name=".ui.classroom.activity.ClassroomActivity"
+            android:exported="true"
+            android:label="教室"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.MoodyMusicForAndroid" />
     </application>
 
 </manifest>

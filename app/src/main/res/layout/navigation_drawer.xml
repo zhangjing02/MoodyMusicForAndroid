@@ -195,6 +195,51 @@
 
         </RadioGroup>
 
+        <!-- Classroom Section -->
+        <TextView
+            android:id="@+id/tvClassroomSection"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="教室"
+            android:textSize="14sp"
+            android:textColor="@color/primary"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingTop="24dp"
+            android:paddingBottom="12dp"
+            app:layout_constraintTop_toBottomOf="@id/rgFont"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnClassroomAuth"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="24dp"
+            android:text="@string/classroom_auth"
+            app:icon="@drawable/ic_palette"
+            app:layout_constraintTop_toBottomOf="@id/tvClassroomSection"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLogout"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginTop="8dp"
+            android:text="退出当前认证"
+            android:textColor="@color/error"
+            app:icon="@drawable/ic_logout"
+            app:iconTint="@color/error"
+            app:layout_constraintTop_toBottomOf="@id/btnClassroomAuth"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:visibility="gone" />
+
+
         <!-- Close Button -->
         <ImageView
             android:id="@+id/ivCloseDrawer"

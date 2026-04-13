@@ -4,12 +4,15 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.moodymusicforandroid.common.eventbus.EventBusManager
+import com.example.moodymusicforandroid.common.eventbus.EventType
 import com.example.moodymusicforandroid.common.network.ApiResponse
 import com.example.moodymusicforandroid.common.network.BusinessError
 import com.example.moodymusicforandroid.common.network.BusinessException
 import com.example.moodymusicforandroid.common.network.ErrorCode
 import com.example.moodymusicforandroid.common.network.HttpException
 import com.example.moodymusicforandroid.common.network.NetworkException
+import com.example.moodymusicforandroid.common.preferences.PreferencesManager
 import com.google.gson.JsonParseException
 import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -237,8 +240,17 @@ abstract class BaseViewModel : ViewModel() {
      * 子类可以重写此方法来自定义处理逻辑
      */
     protected open fun handleTokenExpired() {
-        // 默认处理：清空登录信息，跳转到登录页
-        // 可以发送EventBus事件通知所有页面
+        // 清除本地用户数据
+        try {
+            com.example.moodymusicforandroid.common.preferences.PreferencesManager.clearUserInfo()
+        } catch (e: Exception) {
+            // PreferencesManager 可能未初始化
+        }
+        // 发送Token过期事件，通知UI层跳转登录页
+        com.example.moodymusicforandroid.common.eventbus.EventBusManager.post(
+            com.example.moodymusicforandroid.common.eventbus.EventType.AUTH_TOKEN_EXPIRED,
+            "登录已过期，请重新登录"
+        )
         _toastMessage.value = "登录已过期，请重新登录"
     }
 

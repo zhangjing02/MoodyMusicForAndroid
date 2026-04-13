@@ -41,6 +41,7 @@ junit = "4.13.2"          # 保持 4.13.2 (仍是最新稳定版)
 junitVersion = "1.2.1"    # 保持 1.2.1 (仍是最新稳定版)
 espressoCore = "3.6.1"    # 保持 3.6.1 (仍是最新稳定版)
 
+
 [libraries]
 # AndroidX Core
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -89,6 +90,7 @@ rwidget-helper = { group = "com.github.RuffianZhong", name = "RWidgetHelper", ve
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

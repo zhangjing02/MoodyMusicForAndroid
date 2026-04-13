@@ -15,7 +15,27 @@
       "mcp__zread__read_file",
       "Bash(git init:*)",
       "Bash(git remote add origin https://github.com/zhangjing02/MoodyMusicForAndroid.git:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(Select-String:*)",
+      "Bash(Select-Object:*)",
+      "Bash(curl:*)",
+      "Bash(powershell:*)",
+      "Bash(ls:*)",
+      "Bash(timeout:*)",
+      "Bash(for file in item_*.xml)",
+      "Bash(do sed:*)",
+      "Bash(echo:*)",
+      "Bash(done:*)",
+      "Bash(grep:*)",
+      "Bash(java:*)",
+      "Bash(if [ -f \"$HOME/.gradle/gradle.properties\" ])",
+      "Bash(then cat \"$HOME/.gradle/gradle.properties\")",
+      "Bash(else:*)",
+      "Bash(fi:*)",
+      "mcp__zread__search_doc",
+      "Bash(python3:*)"
     ]
   }
 }

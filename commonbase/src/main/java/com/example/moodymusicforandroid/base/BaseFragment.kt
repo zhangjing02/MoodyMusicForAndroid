@@ -79,7 +79,7 @@ abstract class BaseFragment<VB : ViewDataBinding, VM : BaseViewModel> : Fragment
      * 注意：子类重写时也必须添加 @Subscribe 注解
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
-    protected open fun onEventReceived(event: BaseEvent) {
+    open fun onEventReceived(event: BaseEvent) {
         // 子类实现，例如：
         // when(event.eventType) {
         //     EventType.MUSIC_PLAY -> handleMusicPlay(event)

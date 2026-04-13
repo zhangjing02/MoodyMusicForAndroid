@@ -34,6 +34,7 @@ object PreferencesManager {
 
     // 用户相关的键名
     private const val KEY_USER_TOKEN = "user_token"
+    private const val KEY_USER_REFRESH_TOKEN = "user_refresh_token"
     private const val KEY_USER_ID = "user_id"
     private const val KEY_USER_NAME = "user_name"
     private const val KEY_IS_LOGGED_IN = "is_logged_in"
@@ -254,6 +255,20 @@ object PreferencesManager {
     }
 
     /**
+     * 保存用户 Refresh Token
+     */
+    fun saveUserRefreshToken(token: String) {
+        putString(KEY_USER_REFRESH_TOKEN, token)
+    }
+
+    /**
+     * 获取用户 Refresh Token
+     */
+    fun getUserRefreshToken(): String? {
+        return getString(KEY_USER_REFRESH_TOKEN)
+    }
+
+    /**
      * 保存用户信息
      */
     fun saveUserInfo(userId: String, userName: String) {
@@ -288,6 +303,7 @@ object PreferencesManager {
      */
     fun clearUserInfo() {
         remove(KEY_USER_TOKEN)
+        remove(KEY_USER_REFRESH_TOKEN)
         remove(KEY_USER_ID)
         remove(KEY_USER_NAME)
         putBoolean(KEY_IS_LOGGED_IN, false)

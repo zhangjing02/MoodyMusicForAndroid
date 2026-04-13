@@ -9,7 +9,10 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.moodymusicforandroid.R
+import com.example.moodymusicforandroid.common.preferences.PreferencesManager
 import com.example.moodymusicforandroid.data.api.MoodyApiProvider
+import com.example.moodymusicforandroid.data.model.LoginRequest
+import com.example.moodymusicforandroid.data.model.RegisterRequest
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.launch
 
@@ -57,7 +60,23 @@ class ApiTestActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.btnTestWelcome).setOnClickListener {
-            testGetWelcomeImages()
+            updateResult("Welcome Images 接口已移除")
+        }
+
+        findViewById<Button>(R.id.btnTestLogin).setOnClickListener {
+            testLogin()
+        }
+
+        findViewById<Button>(R.id.btnTestRegister).setOnClickListener {
+            testRegister()
+        }
+
+        findViewById<Button>(R.id.btnTestRefresh).setOnClickListener {
+            testRefreshToken()
+        }
+
+        findViewById<Button>(R.id.btnTestProfile).setOnClickListener {
+            testProfile()
         }
     }
 
@@ -178,27 +197,129 @@ class ApiTestActivity : AppCompatActivity() {
     }
 
     /**
-     * 测试5：欢迎图片
+     * 测试6：登录
      */
-    private fun testGetWelcomeImages() {
+    private fun testLogin() {
         lifecycleScope.launch {
             try {
                 showLoading(true)
-                updateResult("正在获取欢迎图片...")
+                updateResult("正在尝试登录...")
 
-                val response = MoodyApiProvider.apiService.getWelcomeImages()
+                val response = MoodyApiProvider.apiService.login(LoginRequest("test_user_001", "123456"))
 
-                Log.d(TAG, "=== 获取欢迎图片成功 ===")
+                Log.d(TAG, "=== 登录成功 ===")
                 Log.d(TAG, "响应码: ${response.code}")
-                Log.d(TAG, "消息: ${response.message}")
                 Log.d(TAG, "数据: ${GsonBuilder().setPrettyPrinting().create().toJson(response.data)}")
 
-                val imageCount = response.data?.size ?: 0
-                updateResult("✅ 获取欢迎图片成功\n\n图片数量: $imageCount\n\n详细内容请查看 Logcat 日志")
+                response.data?.let { user ->
+                    PreferencesManager.saveUserToken(user.token ?: "")
+                    user.refreshToken?.let { PreferencesManager.saveUserRefreshToken(it) }
+                    PreferencesManager.saveUserInfo(user.userId.toString(), user.username)
+                }
+
+                updateResult("✅ 登录成功\n\n用户: ${response.data?.username}\nToken 已保存")
 
             } catch (e: Exception) {
-                Log.e(TAG, "获取欢迎图片失败", e)
-                updateResult("❌ 获取欢迎图片失败\n\n错误: ${e.message}")
+                Log.e(TAG, "登录失败", e)
+                updateResult("❌ 登录失败\n\n错误: ${e.message}")
+            } finally {
+                showLoading(false)
+            }
+        }
+    }
+
+    /**
+     * 测试7：注册
+     */
+    private fun testRegister() {
+        lifecycleScope.launch {
+            try {
+                showLoading(true)
+                val testName = "TestUser_${System.currentTimeMillis() % 1000}"
+                updateResult("正在尝试注册: $testName ...")
+
+                val response = MoodyApiProvider.apiService.register(
+                    RegisterRequest(testName, "test@example.com", "123456")
+                )
+
+                Log.d(TAG, "=== 注册成功 ===")
+                Log.d(TAG, "数据: ${GsonBuilder().setPrettyPrinting().create().toJson(response.data)}")
+
+                response.data?.let { user ->
+                    PreferencesManager.saveUserToken(user.token ?: "")
+                    user.refreshToken?.let { PreferencesManager.saveUserRefreshToken(it) }
+                }
+
+                updateResult("✅ 注册成功\n\n用户: ${response.data?.username}\nToken 已保存")
+
+            } catch (e: Exception) {
+                Log.e(TAG, "注册失败", e)
+                updateResult("❌ 注册失败\n\n错误: ${e.message}")
+            } finally {
+                showLoading(false)
+            }
+        }
+    }
+
+    /**
+     * 测试8：刷新 Token
+     */
+    private fun testRefreshToken() {
+        lifecycleScope.launch {
+            try {
+                showLoading(true)
+                updateResult("正在测试自动刷新逻辑...")
+
+                // 故意破坏 Token 来触发 401（如果接口支持的话）
+                // 或者是直接调用服务接口
+                val refreshToken = PreferencesManager.getUserRefreshToken()
+                if (refreshToken.isNullOrEmpty()) {
+                    updateResult("❌ 失败: 没有找到已保存的 Refresh Token，请先登录")
+                    return@launch
+                }
+
+                val response = MoodyApiProvider.apiService.refreshToken(
+                    com.example.moodymusicforandroid.data.model.RefreshTokenRequest(refreshToken)
+                )
+
+                Log.d(TAG, "=== 刷新成功 ===")
+                Log.d(TAG, "新数据: ${GsonBuilder().setPrettyPrinting().create().toJson(response.data)}")
+
+                response.data?.let { user ->
+                    PreferencesManager.saveUserToken(user.token ?: "")
+                    user.refreshToken?.let { PreferencesManager.saveUserRefreshToken(it) }
+                }
+
+                updateResult("✅ Token 刷新成功\n\n新 Token 已保存")
+
+            } catch (e: Exception) {
+                Log.e(TAG, "刷新失败", e)
+                updateResult("❌ 刷新失败\n\n错误: ${e.message}")
+            } finally {
+                showLoading(false)
+            }
+        }
+    }
+
+    /**
+     * 测试9：获取个人信息 (验证已登录请求)
+     */
+    private fun testProfile() {
+        lifecycleScope.launch {
+            try {
+                showLoading(true)
+                updateResult("正在获取个人信息...")
+
+                val response = MoodyApiProvider.apiService.getProfile()
+
+                Log.d(TAG, "=== 获取个人信息成功 ===")
+                Log.d(TAG, "数据: ${GsonBuilder().setPrettyPrinting().create().toJson(response.data)}")
+
+                updateResult("✅ 获取个人信息成功\n\n用户: ${response.data?.username}\n昵称: ${response.data?.nickname}")
+
+            } catch (e: Exception) {
+                Log.e(TAG, "获取个人信息失败", e)
+                updateResult("❌ 获取个人信息失败 (未登录或 Token 失效)\n\n错误: ${e.message}")
             } finally {
                 showLoading(false)
             }
