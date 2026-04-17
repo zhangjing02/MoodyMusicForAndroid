@@ -140,8 +140,8 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginTop="16dp"
-            android:scrollbars="none"
             android:overScrollMode="never"
+            android:scrollbars="none"
             app:layout_constraintBottom_toTopOf="@id/layoutLegend"
             app:layout_constraintTop_toBottomOf="@id/tvPlatform">
 
@@ -149,11 +149,11 @@
                 android:id="@+id/rvSeats"
                 android:layout_width="800dp"
                 android:layout_height="match_parent"
+                android:clipToPadding="false"
                 android:paddingHorizontal="12dp"
                 android:paddingBottom="80dp"
-                android:clipToPadding="false"
-                tools:listitem="@layout/item_seat"
                 tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                tools:listitem="@layout/item_seat"
                 tools:spanCount="8" />
         </com.example.moodymusicforandroid.ui.classroom.view.ClassroomScrollContainer>
 

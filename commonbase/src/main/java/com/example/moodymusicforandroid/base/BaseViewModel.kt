@@ -14,6 +14,7 @@ import com.example.moodymusicforandroid.common.network.HttpException
 import com.example.moodymusicforandroid.common.network.NetworkException
 import com.example.moodymusicforandroid.common.preferences.PreferencesManager
 import com.google.gson.JsonParseException
+import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -22,6 +23,7 @@ import java.lang.Exception
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import javax.net.ssl.SSLException
+import retrofit2.HttpException as RetrofitHttpException
 
 /**
  * ViewModel基类
@@ -186,6 +188,15 @@ abstract class BaseViewModel : ViewModel() {
                 }
                 _errorMessage.value = errorMsg
             }
+            // Retrofit HTTP寮傚父锛堥渶瑕佷粠 errorBody 瑙ｆ瀽鏈嶅姟绔秷鎭級
+            is RetrofitHttpException -> {
+                val errorMsg = parseRetrofitHttpError(throwable)
+                    ?: HttpException(throwable.code(), throwable.message()).getErrorMessage()
+                if (showErrorToast) {
+                    _toastMessage.value = errorMsg
+                }
+                _errorMessage.value = errorMsg
+            }
 
             // 网络异常
             is SocketTimeoutException, is UnknownHostException, is SSLException -> {
@@ -220,6 +231,29 @@ abstract class BaseViewModel : ViewModel() {
      * 处理特殊业务错误
      * @param exception 业务异常
      */
+    private fun parseRetrofitHttpError(throwable: RetrofitHttpException): String? {
+        return try {
+            val errorBody = throwable.response()?.errorBody()?.string()?.trim().orEmpty()
+            if (errorBody.isBlank()) {
+                return null
+            }
+
+            val jsonElement = JsonParser.parseString(errorBody)
+            if (!jsonElement.isJsonObject) {
+                return null
+            }
+
+            val message = jsonElement.asJsonObject
+                .get("message")
+                ?.takeUnless { it.isJsonNull }
+                ?.asString
+                ?.trim()
+
+            message?.takeIf { it.isNotEmpty() }
+        } catch (_: Exception) {
+            null
+        }
+    }
     private fun handleSpecialBusinessError(exception: BusinessException) {
         when {
             // Token过期或无效，需要重新登录

@@ -1,31 +1,24 @@
 package com.example.moodymusicforandroid.ui.auth.activity
 
 import android.content.Intent
-import android.os.Bundle
+import android.view.View
+import android.view.inputmethod.EditorInfo
 import com.example.moodymusicforandroid.R
 import com.example.moodymusicforandroid.base.BaseActivity
 import com.example.moodymusicforandroid.common.eventbus.BaseEvent
-import com.example.moodymusicforandroid.common.eventbus.EventBusManager
 import com.example.moodymusicforandroid.common.eventbus.EventType
 import com.example.moodymusicforandroid.databinding.ActivityLoginBinding
-import com.example.moodymusicforandroid.ui.home.activity.MainActivity
 import com.example.moodymusicforandroid.ui.auth.viewmodel.AuthViewModel
+import com.example.moodymusicforandroid.ui.home.activity.MainActivity
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
-/**
- * 登录/注册页面
- * 同一个页面支持登录和注册模式切换
- */
 class LoginActivity : BaseActivity<ActivityLoginBinding, AuthViewModel>() {
-
-    companion object {
-        val TAG = "LoginActivity"
-    }
 
     private var isRegisterMode = false
 
     override fun getViewModelClass() = AuthViewModel::class.java
+
     override fun getLayoutId() = R.layout.activity_login
 
     override fun useEventBus(): Boolean = true
@@ -44,31 +37,37 @@ class LoginActivity : BaseActivity<ActivityLoginBinding, AuthViewModel>() {
         }
 
         binding.btnSubmit.setOnClickListener {
-            val username = binding.etUsername.text.toString().trim()
-            val password = binding.etPassword.text.toString().trim()
+            submitAuth()
+        }
 
-            if (username.isBlank() || password.isBlank()) {
-                showToast("用户名和密码不能为空")
-                return@setOnClickListener
-            }
-
-            if (isRegisterMode) {
-                viewModel.register(username, password)
+        binding.etPassword.setOnEditorActionListener { _, actionId, _ ->
+            if (!isRegisterMode && actionId == EditorInfo.IME_ACTION_DONE) {
+                submitAuth()
+                true
             } else {
-                viewModel.login(username, password)
+                false
+            }
+        }
+
+        binding.etConfirmPassword.setOnEditorActionListener { _, actionId, _ ->
+            if (isRegisterMode && actionId == EditorInfo.IME_ACTION_DONE) {
+                submitAuth()
+                true
+            } else {
+                false
             }
         }
     }
 
     override fun initData() {
         super.initData()
-        // 观察登录成功
+
         viewModel.loginUser.observe(this) { user ->
             if (user != null) {
                 navigateToMain()
             }
         }
-        // 观察注册成功（注册后自动登录，同样跳转主页）
+
         viewModel.registerUser.observe(this) { user ->
             if (user != null) {
                 navigateToMain()
@@ -85,20 +84,45 @@ class LoginActivity : BaseActivity<ActivityLoginBinding, AuthViewModel>() {
         }
     }
 
-    /**
-     * UI 文案随模式切换
-     * 登录模式：显示"没有账号？去注册"
-     * 注册模式：显示"已有账号？去登录"
-     */
+    private fun submitAuth() {
+        val username = binding.etUsername.text?.toString()?.trim().orEmpty()
+        val password = binding.etPassword.text?.toString()?.trim().orEmpty()
+
+        if (username.isBlank() || password.isBlank()) {
+            showToast("Username and password are required")
+            return
+        }
+
+        if (isRegisterMode) {
+            val confirmPassword = binding.etConfirmPassword.text?.toString()?.trim().orEmpty()
+            if (confirmPassword.isBlank()) {
+                showToast("Please confirm your password")
+                return
+            }
+            if (password != confirmPassword) {
+                showToast("Passwords do not match")
+                return
+            }
+            viewModel.register(username, password)
+        } else {
+            viewModel.login(username, password)
+        }
+    }
+
     private fun updateModeUI() {
         if (isRegisterMode) {
-            binding.tvSubtitle.text = "注册新账号"
-            binding.btnSubmit.text = "注册"
-            binding.tvToggleMode.text = "已有账号？去登录"
+            binding.tvSubtitle.text = "Create an account to claim your seat"
+            binding.btnSubmit.text = "Register"
+            binding.tvToggleMode.text = "Already have an account? Sign in"
+            binding.tvModeBadge.text = "REGISTER MODE"
+            binding.tilConfirmPassword.visibility = View.VISIBLE
         } else {
-            binding.tvSubtitle.text = "登录"
-            binding.btnSubmit.text = "登录"
-            binding.tvToggleMode.text = "没有账号？去注册"
+            binding.tvSubtitle.text = "Sign in to claim your seat"
+            binding.btnSubmit.text = "Sign In"
+            binding.tvToggleMode.text = "No account? Register"
+            binding.tvModeBadge.text = "LOGIN MODE"
+            binding.tilConfirmPassword.visibility = View.GONE
+            binding.etConfirmPassword.text?.clear()
         }
     }
 
@@ -110,8 +134,8 @@ class LoginActivity : BaseActivity<ActivityLoginBinding, AuthViewModel>() {
     }
 
     private fun navigateToLogin() {
-        // 已在 LoginActivity，无需跳转，仅清空输入
         binding.etUsername.text?.clear()
         binding.etPassword.text?.clear()
+        binding.etConfirmPassword.text?.clear()
     }
 }

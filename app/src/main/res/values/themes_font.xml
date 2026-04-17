@@ -7,28 +7,16 @@
 
     <!-- 手写飘逸风主题 - 使用霞鹜文楷 -->
     <style name="Theme.MoodyMusicForAndroid.Handwriting" parent="Theme.MoodyMusicForAndroid">
-        <item name="android:textViewStyle">@style/TextViewFontHandwriting</item>
-    </style>
-
-    <style name="TextViewFontHandwriting" parent="android:Widget.TextView">
         <item name="android:fontFamily">@font/lxgw_wenkai_gb_regular</item>
     </style>
 
-    <!-- 现代轻盈风主题 - 使用思源宋体 -->
+    <!-- 现代轻盈风主题 - 使用思源黑体 (Sans) -->
     <style name="Theme.MoodyMusicForAndroid.Modern" parent="Theme.MoodyMusicForAndroid">
-        <item name="android:textViewStyle">@style/TextViewFontModern</item>
+        <item name="android:fontFamily">@font/source_han_sans_sc_regular</item>
     </style>
 
-    <style name="TextViewFontModern" parent="android:Widget.TextView">
-        <item name="android:fontFamily">@font/source_han_serif_sc_regular</item>
-    </style>
-
-    <!-- 清秀文艺风主题 - 使用思源宋体 -->
+    <!-- 清秀文艺风主题 - 使用思源宋体 (Serif) -->
     <style name="Theme.MoodyMusicForAndroid.Elegant" parent="Theme.MoodyMusicForAndroid">
-        <item name="android:textViewStyle">@style/TextViewFontElegant</item>
-    </style>
-
-    <style name="TextViewFontElegant" parent="android:Widget.TextView">
         <item name="android:fontFamily">@font/source_han_serif_sc_regular</item>
     </style>
 

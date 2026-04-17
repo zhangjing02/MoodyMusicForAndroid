@@ -1,36 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Base Application Theme - Material 3 Style -->
-    <style name="Theme.MoodyMusicForAndroid" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Primary Colors -->
-        <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryVariant">@color/primary_container</item>
-        <item name="colorOnPrimary">@color/on_primary</item>
-
-        <!-- Secondary Colors -->
-        <item name="colorSecondary">@color/secondary</item>
-        <item name="colorOnSecondary">@color/on_secondary</item>
-
-        <!-- Tertiary Colors -->
-        <item name="colorTertiary">@color/tertiary</item>
-        <item name="colorOnTertiary">@color/on_tertiary</item>
-
-        <!-- Background Colors -->
-        <item name="android:colorBackground">@color/background</item>
-        <item name="colorOnBackground">@color/on_background</item>
-
-        <!-- Surface Colors -->
-        <item name="colorSurface">@color/surface</item>
-        <item name="colorOnSurface">@color/on_surface</item>
-
-        <!-- Error Colors -->
-        <item name="colorError">@color/error</item>
-        <item name="colorOnError">@color/on_error</item>
-
-        <!-- Typography System - 默认使用霞鹜文楷作为手写字体 -->
-        <item name="android:fontFamily">@font/lxgw_wenkai_gb_regular</item>
-        <item name="android:textViewStyle">@style/MoodyTextViewStyle</item>
-
+    <style name="Theme.MoodyMusicForAndroid" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Status Bar -->
         <item name="android:statusBarColor">@color/surface_overlay_80</item>
         <item name="android:windowLightStatusBar">true</item>
@@ -38,31 +9,134 @@
         <!-- Navigation Bar -->
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightNavigationBar">true</item>
-    </style>
 
-    <!-- 默认TextView样式 - 使用霞鹜文楷 -->
-    <style name="MoodyTextViewStyle" parent="android:Widget.TextView">
+        <!-- Default Typography -->
         <item name="android:fontFamily">@font/lxgw_wenkai_gb_regular</item>
+        <item name="android:textViewStyle">@style/MoodyTextViewStyle</item>
     </style>
 
-    <!-- Button Styles -->
+    <!-- 默认TextView样式 - 使用主题定义的字体 -->
+    <style name="MoodyTextViewStyle" parent="android:Widget.TextView">
+        <item name="android:fontFamily">?android:attr/fontFamily</item>
+    </style>
+
+    <!-- ==================== 基础颜色变体 ==================== -->
+
+    <!-- Green (Default) -->
+    <style name="Theme.MoodyMusicForAndroid.Green" parent="Theme.MoodyMusicForAndroid">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
+        <item name="colorPrimaryContainer">@color/primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/on_primary_container</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorOnSecondary">@color/on_secondary</item>
+        <item name="colorSecondaryContainer">@color/secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/on_secondary_container</item>
+        <item name="colorTertiary">@color/tertiary</item>
+        <item name="colorOnTertiary">@color/on_tertiary</item>
+        <item name="colorTertiaryContainer">@color/tertiary_container</item>
+        <item name="colorOnTertiaryContainer">@color/on_tertiary_container</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="colorOnBackground">@color/on_background</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/on_surface</item>
+        <item name="colorError">@color/error</item>
+        <item name="colorOnError">@color/on_error</item>
+    </style>
+
+    <!-- Ocean -->
+    <style name="Theme.MoodyMusicForAndroid.Ocean" parent="Theme.MoodyMusicForAndroid">
+        <item name="colorPrimary">@color/ocean_primary</item>
+        <item name="colorOnPrimary">@color/ocean_on_primary</item>
+        <item name="colorPrimaryContainer">@color/ocean_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/ocean_on_primary_container</item>
+        <item name="android:colorBackground">@color/ocean_background</item>
+        <item name="colorOnBackground">@color/ocean_on_surface</item>
+        <item name="colorSurface">@color/ocean_surface</item>
+        <item name="colorOnSurface">@color/ocean_on_surface</item>
+    </style>
+
+    <!-- Sunset -->
+    <style name="Theme.MoodyMusicForAndroid.Sunset" parent="Theme.MoodyMusicForAndroid">
+        <item name="colorPrimary">@color/sunset_primary</item>
+        <item name="colorOnPrimary">@color/sunset_on_primary</item>
+        <item name="colorPrimaryContainer">@color/sunset_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/sunset_on_primary_container</item>
+        <item name="android:colorBackground">@color/sunset_background</item>
+        <item name="colorOnBackground">@color/sunset_on_surface</item>
+        <item name="colorSurface">@color/sunset_surface</item>
+        <item name="colorOnSurface">@color/sunset_on_surface</item>
+    </style>
+
+    <!-- Night -->
+    <style name="Theme.MoodyMusicForAndroid.Night" parent="Theme.MoodyMusicForAndroid">
+        <item name="colorPrimary">@color/night_primary</item>
+        <item name="colorOnPrimary">@color/night_on_primary</item>
+        <item name="colorPrimaryContainer">@color/night_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/night_on_primary_container</item>
+        <item name="android:colorBackground">@color/night_background</item>
+        <item name="colorOnBackground">@color/night_on_surface</item>
+        <item name="colorSurface">@color/night_surface</item>
+        <item name="colorOnSurface">@color/night_on_surface</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+
+    <!-- ==================== 组合变体 (颜色 × 字体) ==================== -->
+
+    <!-- Green 变体 -->
+    <style name="Theme.MoodyMusicForAndroid.Green.Handwriting" parent="Theme.MoodyMusicForAndroid.Green" />
+    <style name="Theme.MoodyMusicForAndroid.Green.Modern" parent="Theme.MoodyMusicForAndroid.Green">
+        <item name="android:fontFamily">@font/source_han_sans_sc_regular</item>
+    </style>
+    <style name="Theme.MoodyMusicForAndroid.Green.Elegant" parent="Theme.MoodyMusicForAndroid.Green">
+        <item name="android:fontFamily">@font/source_han_serif_sc_regular</item>
+    </style>
+
+    <!-- Ocean 变体 -->
+    <style name="Theme.MoodyMusicForAndroid.Ocean.Handwriting" parent="Theme.MoodyMusicForAndroid.Ocean" />
+    <style name="Theme.MoodyMusicForAndroid.Ocean.Modern" parent="Theme.MoodyMusicForAndroid.Ocean">
+        <item name="android:fontFamily">@font/source_han_sans_sc_regular</item>
+    </style>
+    <style name="Theme.MoodyMusicForAndroid.Ocean.Elegant" parent="Theme.MoodyMusicForAndroid.Ocean">
+        <item name="android:fontFamily">@font/source_han_serif_sc_regular</item>
+    </style>
+
+    <!-- Sunset 变体 -->
+    <style name="Theme.MoodyMusicForAndroid.Sunset.Handwriting" parent="Theme.MoodyMusicForAndroid.Sunset" />
+    <style name="Theme.MoodyMusicForAndroid.Sunset.Modern" parent="Theme.MoodyMusicForAndroid.Sunset">
+        <item name="android:fontFamily">@font/source_han_sans_sc_regular</item>
+    </style>
+    <style name="Theme.MoodyMusicForAndroid.Sunset.Elegant" parent="Theme.MoodyMusicForAndroid.Sunset">
+        <item name="android:fontFamily">@font/source_han_serif_sc_regular</item>
+    </style>
+
+    <!-- Night 变体 -->
+    <style name="Theme.MoodyMusicForAndroid.Night.Handwriting" parent="Theme.MoodyMusicForAndroid.Night" />
+    <style name="Theme.MoodyMusicForAndroid.Night.Modern" parent="Theme.MoodyMusicForAndroid.Night">
+        <item name="android:fontFamily">@font/source_han_sans_sc_regular</item>
+    </style>
+    <style name="Theme.MoodyMusicForAndroid.Night.Elegant" parent="Theme.MoodyMusicForAndroid.Night">
+        <item name="android:fontFamily">@font/source_han_serif_sc_regular</item>
+    </style>
+
+    <!-- UI Component Styles (Legacy/Helper) -->
     <style name="PrimaryButton" parent="Widget.MaterialComponents.Button">
-        <item name="backgroundTint">@color/primary</item>
-        <item name="android:textColor">@color/on_primary</item>
+        <item name="backgroundTint">?attr/colorPrimary</item>
+        <item name="android:textColor">?attr/colorOnPrimary</item>
         <item name="cornerRadius">12dp</item>
         <item name="android:paddingTop">14dp</item>
         <item name="android:paddingBottom">14dp</item>
     </style>
 
-    <!-- Text Styles -->
     <style name="HeadlineTextAppearance" parent="TextAppearance.MaterialComponents.Headline6">
-        <item name="android:textColor">@color/primary</item>
+        <item name="android:textColor">?attr/colorPrimary</item>
         <item name="android:textStyle">bold</item>
-        <item name="android:fontFamily">serif</item>
+        <item name="android:fontFamily">?android:attr/fontFamily</item>
     </style>
 
     <style name="BodyTextAppearance" parent="TextAppearance.MaterialComponents.Body1">
-        <item name="android:textColor">@color/on_surface_variant</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
 </resources>

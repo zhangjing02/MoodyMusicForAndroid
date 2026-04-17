@@ -4,9 +4,10 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
 import android.view.View
-import android.view.WindowManager
 import android.widget.RadioGroup
 import androidx.core.view.GravityCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import android.content.Intent
@@ -66,24 +67,13 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
      * 设置沉浸式状态栏
      */
     private fun setupImmersiveStatusBar() {
-        window.decorView.systemUiVisibility = (
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                )
-        window.setFlags(
-            WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
-            WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
-        )
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        // 设置状态栏为半透明背景色，匹配app主题
-        window.statusBarColor = android.graphics.Color.parseColor("#CCF8FAF8") // 80% 透明度
-
-        // 设置状态栏图标为深色（适合浅色背景）
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            window.decorView.systemUiVisibility = window.decorView.systemUiVisibility or
-                    android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-        }
+        val insetsController = WindowInsetsControllerCompat(window, window.decorView)
+        insetsController.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        insetsController.isAppearanceLightStatusBars = true
+        insetsController.isAppearanceLightNavigationBars = true
     }
 
     private fun setupViewPager() {

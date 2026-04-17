@@ -3,29 +3,20 @@ package com.example.moodymusicforandroid.data.model
 import com.example.moodymusicforandroid.common.network.ApiResponse
 import com.google.gson.annotations.SerializedName
 
-/**
- * 座位项模型
- */
 data class RosterItem(
     val id: Int,
     @SerializedName("real_name") val realName: String,
     @SerializedName("year_code") val yearCode: String,
     @SerializedName("seat_code") val seatCode: String,
-    @SerializedName("is_claimed") val isClaimed: Int, // 0=可认领, 1=已认领
-    val status: String
+    @SerializedName("is_claimed") val isClaimed: Int,
+    @SerializedName("status") val status: String = "available"
 )
 
-/**
- * 安全问题模型
- */
 data class SecurityQuestion(
     val id: Int,
     val question: String
 )
 
-/**
- * 获取座位表响应
- */
 data class RosterResponse(
     @SerializedName("code") override val code: Int,
     @SerializedName("message") override val message: String? = null,
@@ -35,17 +26,11 @@ data class RosterResponse(
     override val data: RosterResponse? get() = this
 }
 
-/**
- * 验证认领请求 (第二步)
- */
 data class VerifyClaimRequest(
     @SerializedName("roster_id") val rosterId: Int,
     val answers: List<String>
 )
 
-/**
- * 验证认领响应
- */
 data class VerifyClaimResponse(
     @SerializedName("code") override val code: Int,
     @SerializedName("message") override val message: String? = null,
@@ -54,11 +39,41 @@ data class VerifyClaimResponse(
     override val data: VerifyClaimResponse? get() = this
 }
 
-/**
- * 完成认领请求 (第三步)
- */
 data class FinalizeClaimRequest(
     @SerializedName("claim_token") val claimToken: String,
     @SerializedName("password_hash") val passwordHash: String,
     val email: String? = null
 )
+
+data class FinalizeClaimUser(
+    @SerializedName("id") val id: Long? = null,
+    @SerializedName("username") val username: String? = null,
+    @SerializedName("avatar_url") val avatarUrl: String? = null,
+    @SerializedName("created_at") val createdAt: String? = null
+)
+
+data class FinalizeClaimData(
+    @SerializedName("user") val user: FinalizeClaimUser? = null,
+    @SerializedName("token") val token: String? = null,
+    @SerializedName("refresh_token") val refreshToken: String? = null
+)
+
+data class FinalizeClaimResponse(
+    @SerializedName("code") override val code: Int,
+    @SerializedName("message") override val message: String? = null,
+    @SerializedName("user") val user: FinalizeClaimUser? = null,
+    @SerializedName("token") val token: String? = null,
+    @SerializedName("refresh_token") val refreshToken: String? = null,
+    @SerializedName("data") private val nestedData: FinalizeClaimData? = null
+) : ApiResponse<FinalizeClaimData> {
+    override val data: FinalizeClaimData?
+        get() = nestedData ?: FinalizeClaimData(
+            user = user,
+            token = token,
+            refreshToken = refreshToken
+        )
+
+    fun resolvedUser(): FinalizeClaimUser? = data?.user
+    fun resolvedToken(): String? = data?.token
+    fun resolvedRefreshToken(): String? = data?.refreshToken
+}

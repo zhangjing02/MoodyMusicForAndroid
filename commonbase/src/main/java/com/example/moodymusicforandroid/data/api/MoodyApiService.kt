@@ -183,13 +183,13 @@ interface MoodyApiService {
      * 验证认领答案 (第二步)
      */
     @POST("api/user/claim/verify")
-    suspend fun verifyClaim(@Body request: VerifyClaimRequest): BaseResponse<VerifyClaimResponse>
+    suspend fun verifyClaim(@Body request: VerifyClaimRequest): VerifyClaimResponse
 
     /**
      * 完成认领 (第三步)
      */
     @POST("api/user/claim/finalize")
-    suspend fun finalizeClaim(@Body request: FinalizeClaimRequest): BaseResponse<User>
+    suspend fun finalizeClaim(@Body request: FinalizeClaimRequest): FinalizeClaimResponse
 }
 
 /**
