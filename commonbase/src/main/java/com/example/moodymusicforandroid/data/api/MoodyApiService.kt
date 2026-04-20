@@ -2,13 +2,7 @@ package com.example.moodymusicforandroid.data.api
 
 import com.example.moodymusicforandroid.common.network.BaseResponse
 import com.example.moodymusicforandroid.data.model.*
-import retrofit2.http.Body
-import retrofit2.http.DELETE
-import retrofit2.http.GET
-import retrofit2.http.POST
-import retrofit2.http.Path
-import retrofit2.http.Query
-import retrofit2.http.Url
+import retrofit2.http.*
 
 /**
  * Moody 音乐库 API 接口
@@ -190,7 +184,45 @@ interface MoodyApiService {
      */
     @POST("api/user/claim/finalize")
     suspend fun finalizeClaim(@Body request: FinalizeClaimRequest): FinalizeClaimResponse
+
+    // ══════════════════════════════════════════
+    // 专辑社交功能
+    // 所有接口均需要 Authorization: Bearer {token}
+    // ══════════════════════════════════════════
+
+    /**
+     * 获取专辑社交内容（主贴 + 全部回复）
+     * GET /api/albums/{albumId}/social_content
+     */
+    @GET("api/albums/{albumId}/social_content")
+    suspend fun getAlbumSocialContent(
+        @Path("albumId") albumId: String,
+        @Header("Authorization") token: String
+    ): BaseResponse<AlbumSocialContent>
+
+    /**
+     * 在专辑下发主贴（每班级唯一）
+     * POST /api/albums/{albumId}/posts
+     */
+    @POST("api/albums/{albumId}/posts")
+    suspend fun postAlbumPost(
+        @Path("albumId") albumId: String,
+        @Header("Authorization") token: String,
+        @Body body: PostContentRequest
+    ): BaseResponse<Any>
+
+    /**
+     * 在主贴下发评论
+     * POST /api/albums/posts/{postId}/comments
+     */
+    @POST("api/albums/posts/{postId}/comments")
+    suspend fun postAlbumComment(
+        @Path("postId") postId: String,
+        @Header("Authorization") token: String,
+        @Body body: PostContentRequest
+    ): BaseResponse<Any>
 }
+
 
 /**
  * 艺人数据包装

@@ -25,3 +25,10 @@ obj/
 status.txt
 temp_fonts/
 nul
+
+# Gradle and Build
+.gradle-user-home/
+.gradle/
+build/
+**/build/
+captures/

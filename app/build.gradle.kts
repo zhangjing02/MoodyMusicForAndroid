@@ -18,6 +18,10 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        manifestPlaceholders["JPUSH_PKGNAME"] = "com.example.moodymusicforandroid"
+        manifestPlaceholders["JPUSH_APPKEY"] = "cab5e87b9dd9b0acd6df56c3"
+        manifestPlaceholders["JPUSH_CHANNEL"] = "developer-default"
     }
 
     buildTypes {
@@ -54,6 +58,8 @@ dependencies {
     // AndroidX Core
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
 
     // Material & UI
     implementation(libs.androidx.material)
@@ -61,6 +67,9 @@ dependencies {
 
     // UI Widget Helper - 圆角、边框、渐变、状态切换
     implementation(libs.rwidget.helper)
+
+    // JPush
+    implementation(libs.jpush)
 
     // Testing
     testImplementation(libs.junit)

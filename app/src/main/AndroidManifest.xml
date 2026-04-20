@@ -41,6 +41,27 @@
             android:label="教室"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.MoodyMusicForAndroid" />
+
+        <!-- 极光推送 Receiver -->
+        <receiver
+            android:name=".receiver.JPushReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="cn.jpush.android.intent.RECEIVE_MESSAGE" />
+                <category android:name="${applicationId}" />
+            </intent-filter>
+        </receiver>
+
+        <!-- 极光推送 Service -->
+        <service
+            android:name=".receiver.PushService"
+            android:process=":pushcore"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="cn.jiguang.user.service.action" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

@@ -37,6 +37,7 @@ object PreferencesManager {
     private const val KEY_USER_REFRESH_TOKEN = "user_refresh_token"
     private const val KEY_USER_ID = "user_id"
     private const val KEY_USER_NAME = "user_name"
+    private const val KEY_CLASS_ID = "class_id"
     private const val KEY_IS_LOGGED_IN = "is_logged_in"
 
     // 设置相关的键名
@@ -271,10 +272,27 @@ object PreferencesManager {
     /**
      * 保存用户信息
      */
-    fun saveUserInfo(userId: String, userName: String) {
+    fun saveUserInfo(userId: String, userName: String, classId: String? = null) {
         putString(KEY_USER_ID, userId)
         putString(KEY_USER_NAME, userName)
+        if (classId != null) {
+            putString(KEY_CLASS_ID, classId)
+        }
         putBoolean(KEY_IS_LOGGED_IN, true)
+    }
+
+    /**
+     * 保存班级 ID
+     */
+    fun saveClassId(classId: String) {
+        putString(KEY_CLASS_ID, classId)
+    }
+
+    /**
+     * 获取班级 ID
+     */
+    fun getClassId(): String? {
+        return getString(KEY_CLASS_ID)
     }
 
     /**

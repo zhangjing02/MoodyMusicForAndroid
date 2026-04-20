@@ -8,6 +8,7 @@ coreKtx = "1.15.0"        # 保持 1.15.0 (已是最新稳定版)
 appcompat = "1.7.0"       # 保持 1.7.0 (已是最新稳定版)
 material = "1.12.0"       # 保持 1.12.0 (已是最新稳定版)
 constraintlayout = "2.2.0" # 保持 2.2.0 (已是最新稳定版)
+fragmentKtx = "1.8.5"      # AndroidX Fragment KTX
 
 # Lifecycle
 lifecycle = "2.8.7"       # 保持 2.8.7 (已是最新稳定版)
@@ -41,11 +42,14 @@ junit = "4.13.2"          # 保持 4.13.2 (仍是最新稳定版)
 junitVersion = "1.2.1"    # 保持 1.2.1 (仍是最新稳定版)
 espressoCore = "3.6.1"    # 保持 3.6.1 (仍是最新稳定版)
 
+# JPush
+jpush = "5.8.0"
 
 [libraries]
 # AndroidX Core
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragmentKtx" }
 
 # Material & UI
 androidx-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
@@ -91,10 +95,11 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 
+# JPush
+jpush = { group = "cn.jiguang.sdk", name = "jpush", version.ref = "jpush" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version = "2.1.0-1.0.29" }
-

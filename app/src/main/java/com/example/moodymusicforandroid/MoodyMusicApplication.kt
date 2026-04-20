@@ -36,6 +36,10 @@ class MoodyMusicApplication : Application() {
         // - LeakCanary（调试时）
         // - 友盟统计
         // - Bugly
+
+        // 初始化极光推送
+        cn.jpush.android.api.JPushInterface.setDebugMode(true)
+        cn.jpush.android.api.JPushInterface.init(this)
     }
 
     /**

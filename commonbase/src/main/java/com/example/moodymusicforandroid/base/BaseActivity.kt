@@ -58,7 +58,8 @@ abstract class BaseActivity<VB : ViewDataBinding, VM : BaseViewModel> : AppCompa
     protected open fun useDataBinding(): Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        com.example.moodymusicforandroid.common.utils.ThemeManager.applyTheme(this) // 应用动态保存的主题
+        // TODO: 主题管理功能暂时注释，需要创建 ThemeManager 类
+        // com.example.moodymusicforandroid.common.utils.ThemeManager.applyTheme(this) // 应用动态保存的主题
         super.onCreate(savedInstanceState)
         initEventBus()  // 先注册 EventBus
         initViewModel()

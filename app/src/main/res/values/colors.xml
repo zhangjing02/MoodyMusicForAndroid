@@ -74,6 +74,7 @@
     <color name="classroom_chalk_white">#e8f5e9</color>
     <color name="classroom_gold_label">#f1c40f</color>
     <color name="classroom_desk">#8D6E63</color>
+    <color name="classroom_desk_claimed">#4E342E</color>
     <color name="classroom_desk_shadow">#5D4037</color>
     <color name="classroom_metal_leg">#95a5a6</color>
     <color name="classroom_metal_leg_shadow">#7f8c8d</color>
