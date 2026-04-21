@@ -39,6 +39,7 @@ object PreferencesManager {
     private const val KEY_USER_NAME = "user_name"
     private const val KEY_CLASS_ID = "class_id"
     private const val KEY_IS_LOGGED_IN = "is_logged_in"
+    private const val KEY_DEVICE_ID = "device_id"
 
     // 设置相关的键名
     private const val KEY_THEME_MODE = "theme_mode"
@@ -314,6 +315,19 @@ object PreferencesManager {
      */
     fun isLoggedIn(): Boolean {
         return getBoolean(KEY_IS_LOGGED_IN, false)
+    }
+
+    /**
+     * 获取或生成设备唯一 ID
+     */
+    fun getDeviceId(): String {
+        checkInitialized()
+        var deviceId = getString(KEY_DEVICE_ID)
+        if (deviceId.isNullOrEmpty()) {
+            deviceId = java.util.UUID.randomUUID().toString().replace("-", "")
+            putString(KEY_DEVICE_ID, deviceId)
+        }
+        return deviceId
     }
 
     /**

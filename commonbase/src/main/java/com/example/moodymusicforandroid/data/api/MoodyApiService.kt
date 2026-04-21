@@ -196,8 +196,7 @@ interface MoodyApiService {
      */
     @GET("api/albums/{albumId}/social_content")
     suspend fun getAlbumSocialContent(
-        @Path("albumId") albumId: String,
-        @Header("Authorization") token: String
+        @Path("albumId") albumId: String
     ): BaseResponse<AlbumSocialContent>
 
     /**
@@ -207,7 +206,6 @@ interface MoodyApiService {
     @POST("api/albums/{albumId}/posts")
     suspend fun postAlbumPost(
         @Path("albumId") albumId: String,
-        @Header("Authorization") token: String,
         @Body body: PostContentRequest
     ): BaseResponse<Any>
 
@@ -218,7 +216,6 @@ interface MoodyApiService {
     @POST("api/albums/posts/{postId}/comments")
     suspend fun postAlbumComment(
         @Path("postId") postId: String,
-        @Header("Authorization") token: String,
         @Body body: PostContentRequest
     ): BaseResponse<Any>
 }

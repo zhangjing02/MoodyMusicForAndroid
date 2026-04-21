@@ -13,7 +13,7 @@ import com.example.moodymusicforandroid.R
 import com.example.moodymusicforandroid.base.BaseFragment
 import com.example.moodymusicforandroid.common.preferences.PreferencesManager
 import com.example.moodymusicforandroid.databinding.FragmentLibraryBinding
-import com.example.moodymusicforandroid.receiver.AppFlags
+import com.example.moodymusicforandroid.common.utils.AppFlags
 import com.example.moodymusicforandroid.receiver.JPushReceiver
 import com.example.moodymusicforandroid.ui.home.adapter.LibraryAdapter
 import com.example.moodymusicforandroid.ui.home.model.LibraryItem

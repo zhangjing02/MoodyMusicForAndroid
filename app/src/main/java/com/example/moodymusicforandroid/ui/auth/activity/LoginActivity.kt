@@ -29,6 +29,11 @@ class LoginActivity : BaseActivity<ActivityLoginBinding, AuthViewModel>() {
 
     override fun initView() {
         super.initView()
+        
+        if (intent.getBooleanExtra("KICKED_OUT", false)) {
+            showToast("您的账号已在其他设备登录，请重新登录")
+        }
+        
         updateModeUI()
 
         binding.tvToggleMode.setOnClickListener {
@@ -78,7 +83,12 @@ class LoginActivity : BaseActivity<ActivityLoginBinding, AuthViewModel>() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     override fun onEventReceived(event: BaseEvent) {
         when (event.eventType) {
-            EventType.AUTH_TOKEN_EXPIRED -> navigateToLogin()
+            EventType.AUTH_TOKEN_EXPIRED -> {
+                if (event.eventData == "KICKED_OUT") {
+                    showToast("您的账号已在其他设备登录，请重新登录")
+                }
+                navigateToLogin()
+            }
             EventType.USER_LOGIN -> navigateToMain()
             else -> Unit
         }

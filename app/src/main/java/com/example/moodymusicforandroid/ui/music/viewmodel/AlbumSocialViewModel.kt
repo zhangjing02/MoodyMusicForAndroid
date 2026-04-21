@@ -29,10 +29,9 @@ class AlbumSocialViewModel : BaseViewModel() {
      */
     fun fetchSocialContent(albumId: String) {
         val token = PreferencesManager.getUserToken() ?: return
-        val bearerToken = if (token.startsWith("Bearer ")) token else "Bearer $token"
         
         request(isShowLoading = false) {
-            val response = MoodyApiProvider.apiService.getAlbumSocialContent(albumId, bearerToken)
+            val response = MoodyApiProvider.apiService.getAlbumSocialContent(albumId)
             if (response.isSuccess()) {
                 socialContent.value = response.data
             }
@@ -46,10 +45,9 @@ class AlbumSocialViewModel : BaseViewModel() {
      */
     fun postMainPost(albumId: String, content: String) {
         val token = PreferencesManager.getUserToken() ?: return
-        val bearerToken = if (token.startsWith("Bearer ")) token else "Bearer $token"
         
         request(isShowLoading = true) {
-            val response = MoodyApiProvider.apiService.postAlbumPost(albumId, bearerToken, PostContentRequest(content))
+            val response = MoodyApiProvider.apiService.postAlbumPost(albumId, PostContentRequest(content))
             if (response.isSuccess()) {
                 actionStatus.value = true
                 fetchSocialContent(albumId) // 成功后刷新
@@ -64,10 +62,9 @@ class AlbumSocialViewModel : BaseViewModel() {
      */
     fun postReply(postId: String, albumId: String, content: String) {
         val token = PreferencesManager.getUserToken() ?: return
-        val bearerToken = if (token.startsWith("Bearer ")) token else "Bearer $token"
         
         request(isShowLoading = true) {
-            val response = MoodyApiProvider.apiService.postAlbumComment(postId, bearerToken, PostContentRequest(content))
+            val response = MoodyApiProvider.apiService.postAlbumComment(postId, PostContentRequest(content))
             if (response.isSuccess()) {
                 actionStatus.value = true
                 fetchSocialContent(albumId) // 成功后刷新

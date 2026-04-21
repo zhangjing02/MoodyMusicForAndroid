@@ -9,6 +9,7 @@ import cn.jpush.android.api.NotificationMessage
 import cn.jpush.android.service.JPushMessageReceiver
 import com.google.gson.Gson
 import com.google.gson.JsonObject
+import com.example.moodymusicforandroid.common.utils.AppFlags
 
 /**
  * JPush 消息接收器
@@ -48,6 +49,7 @@ class JPushReceiver : JPushMessageReceiver() {
 
         /** 透传消息 action 值 */
         const val ACTION_FETCH_NEW = "FETCH_NEW"
+        const val ACTION_KICK_OUT = "KICK_OUT"
 
         /**
          * LocalBroadcast Action — 通知前台 UI 刷新评论
@@ -73,13 +75,19 @@ class JPushReceiver : JPushMessageReceiver() {
             val json = Gson().fromJson(raw, JsonObject::class.java)
             val extras = json.getAsJsonObject("extras") ?: return
             val action  = extras.get("action")?.asString   ?: return
-            val albumId = extras.get("album_id")?.asString ?: return
+
+            if (action == ACTION_KICK_OUT) {
+                Log.d(TAG, "[onMessage] KICK_OUT signal received")
+                handleKickOut(context)
+                return
+            }
 
             if (action != ACTION_FETCH_NEW) {
                 Log.d(TAG, "[onMessage] 未知 action: $action，忽略")
                 return
             }
 
+            val albumId = extras.get("album_id")?.asString ?: return
             Log.d(TAG, "[onMessage] FETCH_NEW signal for album: $albumId")
             handleFetchNew(context, albumId)
 
@@ -113,6 +121,25 @@ class JPushReceiver : JPushMessageReceiver() {
             AppFlags.hasNewComments = true
             AppFlags.pendingRefreshAlbumId = albumId
         }
+    }
+
+    /**
+     * 处理 KICK_OUT 互踢信号
+     */
+    private fun handleKickOut(context: Context?) {
+        Log.d(TAG, "[handleKickOut] 用户被互踢，清除本地登录状态")
+        try {
+            com.example.moodymusicforandroid.common.preferences.PreferencesManager.clearUserInfo()
+        } catch (e: Exception) {}
+
+        // 设置标记，让前台 Activity 弹框提示
+        AppFlags.showKickOutDialog = true
+
+        // 发送事件，让基类 Activity 处理弹窗显示，不强制跳转
+        com.example.moodymusicforandroid.common.eventbus.EventBusManager.post(
+            com.example.moodymusicforandroid.common.eventbus.EventType.AUTH_TOKEN_EXPIRED,
+            "KICKED_OUT"
+        )
     }
 
     // ──────────────────────────────────────────
@@ -157,30 +184,4 @@ class JPushReceiver : JPushMessageReceiver() {
         Log.d(TAG, "[onNotificationSettingsCheck] isOn=$isOn, source=$source")
         super.onNotificationSettingsCheck(context, isOn, source)
     }
-}
-
-/**
- * 全局 App 状态标记（轻量单例）
- *
- * 使用场景：
- * - isAlbumDetailVisible + visibleAlbumId：供 JPushReceiver 判断当前是否在专辑详情页
- * - hasNewComments + pendingRefreshAlbumId：后台脏标记，供 onResume 消费
- *
- * 调用方：
- * - AlbumDetailActivity.onResume()  → 读 hasNewComments，触发刷新后重置
- * - AlbumDetailActivity.onResume()  → 设置 isAlbumDetailVisible = true
- * - AlbumDetailActivity.onPause()   → 设置 isAlbumDetailVisible = false
- */
-object AppFlags {
-    /** 专辑详情页是否当前可见（前台） */
-    @Volatile var isAlbumDetailVisible: Boolean = false
-
-    /** 当前可见的专辑 ID（用于精准匹配推送） */
-    @Volatile var visibleAlbumId: String = ""
-
-    /** 是否有新评论待刷新 */
-    @Volatile var hasNewComments: Boolean = false
-
-    /** 待刷新的专辑 ID */
-    @Volatile var pendingRefreshAlbumId: String = ""
 }

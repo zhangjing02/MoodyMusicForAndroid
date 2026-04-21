@@ -40,6 +40,9 @@ object RetrofitClient {
             .header("User-Agent", "MoodyMusicAndroid/1.0")
 
         try {
+            requestBuilder.header("X-Client-Type", "android")
+            requestBuilder.header("X-Device-Id", PreferencesManager.getDeviceId())
+
             val token = PreferencesManager.getUserToken()
             if (!token.isNullOrEmpty()) {
                 requestBuilder.header("Authorization", "Bearer $token")

@@ -12,6 +12,8 @@ import com.example.moodymusicforandroid.common.eventbus.BaseEvent
 import com.example.moodymusicforandroid.common.eventbus.EventBusManager
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import com.example.moodymusicforandroid.common.eventbus.EventType
+import com.example.moodymusicforandroid.common.utils.AppFlags
 
 /**
  * Activity基类
@@ -69,6 +71,33 @@ abstract class BaseActivity<VB : ViewDataBinding, VM : BaseViewModel> : AppCompa
         initData()
     }
 
+    override fun onResume() {
+        super.onResume()
+        checkKickOutDialog()
+    }
+
+    private fun checkKickOutDialog() {
+        if (AppFlags.showKickOutDialog) {
+            AppFlags.showKickOutDialog = false
+            showKickOutAlertDialog()
+        }
+    }
+
+    private fun showKickOutAlertDialog() {
+        android.app.AlertDialog.Builder(this)
+            .setTitle("下线通知")
+            .setMessage("您的账号已在其他设备登录。当前设备已下线，您可以继续使用无需登录的功能。")
+            .setPositiveButton("我知道了", null)
+            .setNegativeButton("重新登录") { _, _ ->
+                val intent = android.content.Intent().apply {
+                    setClassName(this@BaseActivity, "com.example.moodymusicforandroid.ui.auth.activity.LoginActivity")
+                }
+                startActivity(intent)
+            }
+            .setCancelable(false)
+            .show()
+    }
+
     /**
      * 初始化 EventBus（自动注册）
      */
@@ -84,11 +113,24 @@ abstract class BaseActivity<VB : ViewDataBinding, VM : BaseViewModel> : AppCompa
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     open fun onEventReceived(event: BaseEvent) {
-        // 子类实现，例如：
-        // when(event.eventType) {
-        //     EventType.MUSIC_PLAY -> handleMusicPlay(event)
-        //     EventType.USER_LOGIN -> handleUserLogin(event)
-        // }
+        if (event.eventType == EventType.AUTH_TOKEN_EXPIRED) {
+            val isKickedOut = event.eventData == "KICKED_OUT"
+            if (isKickedOut) {
+                // 如果当前处于前台，则直接弹窗，否则交给 onResume 弹窗
+                if (lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) {
+                    checkKickOutDialog()
+                }
+            } else {
+                // 原有的 Token 过期跳转逻辑 (非互踢场景)
+                val intent = android.content.Intent().apply {
+                    setClassName(this@BaseActivity, "com.example.moodymusicforandroid.ui.auth.activity.LoginActivity")
+                    flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    putExtra("KICKED_OUT", false)
+                }
+                startActivity(intent)
+                finish()
+            }
+        }
     }
 
     /**
