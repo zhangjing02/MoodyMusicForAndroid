@@ -122,24 +122,28 @@ class ClassroomActivity : BaseActivity<ActivityClassroomBinding, ClassroomViewMo
 
     private fun handleSeatClick(seat: RosterItem) {
         if (seat.isClaimed == 1) {
-            showLoginDialog(seat.realName)
+            showLoginDialog(seat)
         } else {
             showClaimVerifyDialog(seat)
         }
     }
 
-    private fun showLoginDialog(name: String) {
+    private fun showLoginDialog(seat: RosterItem) {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_input_one_field, null)
         val etInput = dialogView.findViewById<EditText>(R.id.etInput)
         etInput.hint = "请输入密码"
+        etInput.inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+
+        // 后端存储的 username 格式与认领时生成的一致：${yearCode}.${seatCode}${realName}
+        val username = "${seat.yearCode}.${seat.seatCode}${seat.realName}"
 
         MaterialAlertDialogBuilder(this)
-            .setTitle("$name，欢迎回来")
+            .setTitle("${seat.realName}，欢迎回来")
             .setView(dialogView)
             .setPositiveButton("登录") { _, _ ->
                 val password = etInput.text.toString()
                 if (password.isNotEmpty()) {
-                    viewModel.login(name, password)
+                    viewModel.login(username, password)
                 }
             }
             .setNegativeButton("取消", null)
@@ -301,12 +305,6 @@ class ClassroomActivity : BaseActivity<ActivityClassroomBinding, ClassroomViewMo
         }
 
         dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = true
-
-        if (message.contains("email", ignoreCase = true) || message.contains("邮箱")) {
-            showToast("后台免邮箱注册正在发布中，请稍后再试")
-            return true
-        }
-
         return false
     }
 

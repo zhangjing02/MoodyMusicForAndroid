@@ -39,10 +39,21 @@ data class VerifyClaimResponse(
     override val data: VerifyClaimResponse? get() = this
 }
 
+/**
+ * 不带 email 字段的认领请求（email 为 null 时使用此类，避免后端校验 null 格式错误）
+ */
 data class FinalizeClaimRequest(
     @SerializedName("claim_token") val claimToken: String,
+    @SerializedName("password_hash") val passwordHash: String
+)
+
+/**
+ * 带 email 字段的认领请求（用户主动填写邮箱时使用）
+ */
+data class FinalizeClaimWithEmailRequest(
+    @SerializedName("claim_token") val claimToken: String,
     @SerializedName("password_hash") val passwordHash: String,
-    val email: String? = null
+    @SerializedName("email") val email: String
 )
 
 data class FinalizeClaimUser(

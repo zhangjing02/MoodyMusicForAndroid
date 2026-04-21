@@ -72,7 +72,7 @@ interface MoodyApiService {
      * 登录
      */
     @POST("api/user/login")
-    suspend fun login(@Body request: LoginRequest): BaseResponse<User>
+    suspend fun login(@Body request: LoginRequest): BaseResponse<LoginData>
 
     /**
      * 刷新 Token
@@ -180,10 +180,16 @@ interface MoodyApiService {
     suspend fun verifyClaim(@Body request: VerifyClaimRequest): VerifyClaimResponse
 
     /**
-     * 完成认领 (第三步)
+     * 完成认领 (第三步) - 不带邮箱
      */
     @POST("api/user/claim/finalize")
     suspend fun finalizeClaim(@Body request: FinalizeClaimRequest): FinalizeClaimResponse
+
+    /**
+     * 完成认领 (第三步) - 带邮箱
+     */
+    @POST("api/user/claim/finalize")
+    suspend fun finalizeClaimWithEmail(@Body request: FinalizeClaimWithEmailRequest): FinalizeClaimResponse
 
     // ══════════════════════════════════════════
     // 专辑社交功能

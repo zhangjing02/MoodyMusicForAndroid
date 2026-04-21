@@ -6,25 +6,25 @@ import com.google.gson.annotations.SerializedName
  * 用户信息
  */
 data class User(
-    @SerializedName("userId")
+    @SerializedName("id")
     val userId: Long,
 
     @SerializedName("username")
     val username: String,
 
     @SerializedName("nickname")
-    val nickname: String,
+    val nickname: String = "",
 
-    @SerializedName("avatarUrl")
+    @SerializedName("avatar_url")
     val avatarUrl: String? = null,
 
     @SerializedName("token")
     val token: String? = null,
 
-    @SerializedName("refreshToken")
+    @SerializedName("refresh_token")
     val refreshToken: String? = null,
 
-    @SerializedName("createdAt")
+    @SerializedName("created_at")
     val createdAt: String? = null,
 
     @SerializedName("favoriteCount")

@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.moodymusicforandroid.R
 import com.example.moodymusicforandroid.common.preferences.PreferencesManager
 import com.example.moodymusicforandroid.data.api.MoodyApiProvider
+import com.example.moodymusicforandroid.data.model.LoginData
 import com.example.moodymusicforandroid.data.model.LoginRequest
 import com.example.moodymusicforandroid.data.model.RegisterRequest
 import com.google.gson.GsonBuilder
@@ -211,13 +212,15 @@ class ApiTestActivity : AppCompatActivity() {
                 Log.d(TAG, "响应码: ${response.code}")
                 Log.d(TAG, "数据: ${GsonBuilder().setPrettyPrinting().create().toJson(response.data)}")
 
-                response.data?.let { user ->
-                    PreferencesManager.saveUserToken(user.token ?: "")
-                    user.refreshToken?.let { PreferencesManager.saveUserRefreshToken(it) }
-                    PreferencesManager.saveUserInfo(user.userId.toString(), user.username)
+                response.data?.let { loginData ->
+                    PreferencesManager.saveUserToken(loginData.token ?: "")
+                    loginData.refreshToken?.let { PreferencesManager.saveUserRefreshToken(it) }
+                    loginData.user?.let { user ->
+                        PreferencesManager.saveUserInfo(user.userId.toString(), user.username)
+                    }
                 }
 
-                updateResult("✅ 登录成功\n\n用户: ${response.data?.username}\nToken 已保存")
+                updateResult("✅ 登录成功\n\n用户: ${response.data?.user?.username}\nToken 已保存")
 
             } catch (e: Exception) {
                 Log.e(TAG, "登录失败", e)

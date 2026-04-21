@@ -6,9 +6,11 @@ import com.example.moodymusicforandroid.common.eventbus.EventBusManager
 import com.example.moodymusicforandroid.common.eventbus.EventType
 import com.example.moodymusicforandroid.common.preferences.PreferencesManager
 import com.example.moodymusicforandroid.data.api.MoodyApiProvider
+import com.example.moodymusicforandroid.data.model.LoginData
 import com.example.moodymusicforandroid.data.model.LoginRequest
 import com.example.moodymusicforandroid.data.model.RegisterRequest
 import com.example.moodymusicforandroid.data.model.User
+import java.security.MessageDigest
 
 /**
  * 认证ViewModel
@@ -29,12 +31,19 @@ class AuthViewModel : BaseViewModel() {
             return
         }
 
+        val passwordHash = hashPassword(password)
         request(isShowLoading = true) {
-            val response = MoodyApiProvider.apiService.login(LoginRequest(username, password))
-            val user = response.data
-            if (response.isSuccess() && user != null) {
-                // 保存token和用户信息到本地
+            val response = MoodyApiProvider.apiService.login(LoginRequest(username, passwordHash))
+            val loginData = response.data
+            val backendUser = loginData?.user
+            if (response.isSuccess() && backendUser != null) {
+                // token 由后端单独返回，注入 User
+                val user = backendUser.copy(
+                    token = loginData.token ?: backendUser.token,
+                    refreshToken = loginData.refreshToken ?: backendUser.refreshToken
+                )
                 user.token?.let { PreferencesManager.saveUserToken(it) }
+                user.refreshToken?.let { PreferencesManager.saveUserRefreshToken(it) }
                 PreferencesManager.saveUserInfo(user.userId.toString(), user.username)
                 loginUser.postValue(user)
                 // 发送登录成功事件
@@ -43,6 +52,12 @@ class AuthViewModel : BaseViewModel() {
             }
             response
         }
+    }
+
+    private fun hashPassword(password: String): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        val bytes = digest.digest(password.toByteArray())
+        return bytes.joinToString("") { "%02x".format(it) }
     }
 
     /**

@@ -8,6 +8,8 @@ import com.example.moodymusicforandroid.common.preferences.PreferencesManager
 import com.example.moodymusicforandroid.data.api.MoodyApiProvider
 import com.example.moodymusicforandroid.data.model.FinalizeClaimRequest
 import com.example.moodymusicforandroid.data.model.FinalizeClaimResponse
+import com.example.moodymusicforandroid.data.model.FinalizeClaimWithEmailRequest
+import com.example.moodymusicforandroid.data.model.LoginData
 import com.example.moodymusicforandroid.data.model.LoginRequest
 import com.example.moodymusicforandroid.data.model.RosterItem
 import com.example.moodymusicforandroid.data.model.RosterResponse
@@ -66,9 +68,16 @@ class ClassroomViewModel : BaseViewModel() {
     fun finalizeClaim(claimToken: String, passwordRaw: String, email: String? = null) {
         val passwordHash = hashPassword(passwordRaw)
         request(isShowLoading = true, showErrorToast = false) {
-            val response = MoodyApiProvider.apiService.finalizeClaim(
-                FinalizeClaimRequest(claimToken, passwordHash, email)
-            )
+            val response = if (email.isNullOrBlank()) {
+                // email 为空时不传该字段，避免后端 null 格式校验失败
+                MoodyApiProvider.apiService.finalizeClaim(
+                    FinalizeClaimRequest(claimToken, passwordHash)
+                )
+            } else {
+                MoodyApiProvider.apiService.finalizeClaimWithEmail(
+                    FinalizeClaimWithEmailRequest(claimToken, passwordHash, email)
+                )
+            }
             if (response.isSuccess()) {
                 val mappedUser = buildClaimUser(response)
                 saveLoginState(mappedUser)
@@ -79,12 +88,19 @@ class ClassroomViewModel : BaseViewModel() {
     }
 
     fun login(username: String, passwordRaw: String) {
+        val passwordHash = hashPassword(passwordRaw)
         request(isShowLoading = true) {
             val response = MoodyApiProvider.apiService.login(
-                LoginRequest(username, passwordRaw)
+                LoginRequest(username, passwordHash)
             )
-            val user = response.data
-            if (response.isSuccess() && user != null) {
+            val loginData = response.data
+            val backendUser = loginData?.user
+            if (response.isSuccess() && backendUser != null) {
+                // 将后端返回的 token/refreshToken 注入 User（因后端单独返回，不在 user 对象内）
+                val user = backendUser.copy(
+                    token = loginData.token ?: backendUser.token,
+                    refreshToken = loginData.refreshToken ?: backendUser.refreshToken
+                )
                 saveLoginState(user)
                 loginResult.postValue(user)
             }

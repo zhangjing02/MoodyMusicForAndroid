@@ -9,7 +9,7 @@ data class LoginRequest(
     @SerializedName("username")
     val username: String,
 
-    @SerializedName("password")
+    @SerializedName("password_hash")
     val password: String
 )
 
@@ -33,4 +33,19 @@ data class RegisterRequest(
 data class RefreshTokenRequest(
     @SerializedName("refresh_token")
     val refreshToken: String
+)
+
+/**
+ * 登录响应的 data 字段
+ * 后端: { user: {...}, token: "...", refresh_token: "..." }
+ */
+data class LoginData(
+    @SerializedName("user")
+    val user: User? = null,
+
+    @SerializedName("token")
+    val token: String? = null,
+
+    @SerializedName("refresh_token")
+    val refreshToken: String? = null
 )
