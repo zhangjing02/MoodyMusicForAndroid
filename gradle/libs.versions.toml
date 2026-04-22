@@ -43,7 +43,7 @@ junitVersion = "1.2.1"    # 保持 1.2.1 (仍是最新稳定版)
 espressoCore = "3.6.1"    # 保持 3.6.1 (仍是最新稳定版)
 
 # JPush
-jpush = "5.8.0"
+jpush = "5.9.2"
 
 [libraries]
 # AndroidX Core

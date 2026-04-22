@@ -1,61 +1,106 @@
 # MoodyMusicForAndroid
 
-一个基于情绪的音乐推荐 Android 原生应用，采用 MVVM 架构和 Kotlin 语言开发。
+一个基于情绪推荐与同学互动场景的原生 Android 应用，采用 `Kotlin + XML(DataBinding) + MVVM`。
 
-## 项目概述
+## 项目概览
 
-MoodyMusicForAndroid 是一个现代化的 Android 音乐应用，通过分析用户的情绪状态来推荐合适的音乐。项目采用 MVVM 架构模式，使用 Kotlin + XML DataBinding 开发，并实现了自定义的基础类框架来减少代码冗余。
+MoodyMusicForAndroid 目前包含三条核心业务线：
 
-## 核心技术与特性 (v1.2.0)
+1. 音乐内容浏览（Home / Discover / Library）
+2. 教室座位认领与登录流程（Classroom Claim）
+3. 专辑社交互动与推送驱动刷新（Album Social + JPush）
 
-### 1. 实时社交同步引擎 (JPush Powered)
-- **Signal-over-Data 架构**: 推送系统仅传输“刷新信号”（如 `FETCH_NEW`），由客户端在接收到信号后通过安全的 API 接口获取最新内容，保障数据安全性与一致性。
-- **生命周期感知同步**: 
-  - **前台**: 实时接收信号并触发 UI 局部刷新。
-  - **后台**: 自动标记“脏状态”，用户返回前台时自动增量刷新。
-- **动态路由**: 基于 `album_{ID}` 标签精准分发，确保讨论刷新仅触达相关用户。
+## 最近代码已实现（与当前仓库一致）
 
-### 2. 交互式专辑社交模块
-- **无感集成**: 社交评论区深度嵌入在专辑详情页面底部，支持滑入式交互。
-- **实时交互**: 支持即时发布评论、多级回复预览及点赞（规划中）。
+### 1. 教室座位认领闭环（已打通）
 
-### 3. 高性能 UI 与 架构
-- **RWidgetHelper**: 声明式 UI 增强，支持圆角、渐变、状态色等复杂效果，无需编写 XML Shape。
-- **MVVM 泛型基类**: 内置协程管理、网络请求包装及统一错误处理。
+- 支持座位表拉取与空位补齐展示（最多 64 座位）
+- 支持 3 题安全问题校验：`/api/user/claim/verify`
+- 支持认领完成：`/api/user/claim/finalize`
+- 支持已认领用户密码登录：`/api/user/login`
+- 成功后统一写入 `PreferencesManager` 并发送登录事件
 
-## 未来路线图 (Roadmap)
+关键代码：
+- `app/src/main/java/com/example/moodymusicforandroid/ui/classroom/activity/ClassroomActivity.kt`
+- `app/src/main/java/com/example/moodymusicforandroid/ui/classroom/viewmodel/ClassroomViewModel.kt`
 
-- [ ] **音频播放核心 (ExoPlayer)**: 实现基于前台服务的全局播放、锁屏控制及蓝牙支持。
-- [ ] **数据持久化 (Room + SQLCipher)**: 引入加密本地数据库，支持离线缓存。
-- [ ] **全局搜索系统**: 实现带历史记录与搜索建议的智能入口。
-- [ ] **主题引擎**: 支持随专辑封面主色调动态调整的应用配色。
+### 2. 专辑社交模块（已接入）
+
+- 拉取专辑下主贴与回复：`GET /api/albums/{albumId}/social_content`
+- 发布主贴：`POST /api/albums/{albumId}/posts`
+- 发布评论：`POST /api/albums/posts/{postId}/comments`
+- 在 `LibraryFragment` 内嵌社交区并支持发送后刷新
+
+关键代码：
+- `app/src/main/java/com/example/moodymusicforandroid/ui/music/viewmodel/AlbumSocialViewModel.kt`
+- `app/src/main/java/com/example/moodymusicforandroid/ui/home/LibraryFragment.kt`
+
+### 3. JPush 信号驱动刷新（已接入）
+
+- 应用启动时初始化 JPush SDK
+- `JPushReceiver` 解析透传消息 `FETCH_NEW`
+- 前台可见时通过 `LocalBroadcast` 触发即时刷新
+- 后台时打脏标记，回到前台后消费刷新
+- 页面生命周期中动态绑定/清理 tag
+
+关键代码：
+- `app/src/main/java/com/example/moodymusicforandroid/MoodyMusicApplication.kt`
+- `app/src/main/java/com/example/moodymusicforandroid/receiver/JPushReceiver.kt`
+
+### 4. 最近新增的 UI 资源（进行中）
+
+最近提交中增加了一批教室座位视觉资源（如 `bg_seat_desk_refined.xml`、`bg_seat_status_*.xml` 等），用于后续教室 UI 细化与质感升级。
+
+## 接下来要做（Roadmap）
+
+1. 教室 UI 第二轮接线：将新座位素材与 `item_seat.xml`/`SeatAdapter` 完整联动
+2. 社交体验增强：回复输入态、失败重试、点赞与分页加载
+3. 推送稳定性增强：补齐弱网/离线场景与重复消息去重
+4. 音乐播放内核：接入 ExoPlayer，补齐前台服务与锁屏控制
+5. 本地数据层：引入 Room 做缓存与离线兜底
 
 ## 技术栈
 
-- **核心**: Kotlin 2.1.0, Coroutines, MVVM
-- **UI**: DataBinding, Material Design, RWidgetHelper
-- **网络**: Retrofit 2.11.0, OkHttp, JPush 5.4.0
-- **图片**: Glide 4.16.0
-- **其他**: EventBus 3.3.1, BaseRecyclerViewAdapterHelper 4.1.4
+- Kotlin `2.1.0`
+- AGP `8.10.1`
+- Coroutines `1.9.0`
+- Retrofit `2.11.0` + OkHttp `4.12.0`
+- JPush `5.9.2`
+- Glide `4.16.0`
+- EventBus `3.3.1`
+- BaseRecyclerViewAdapterHelper `4.1.4`
+
+依赖版本集中管理：`gradle/libs.versions.toml`
+
+## 构建与运行
+
+```bash
+# Debug 构建
+./gradlew assembleDebug
+
+# 全量构建
+./gradlew build
+
+# 单测
+./gradlew testDebugUnitTest
+```
+
+## 环境注意事项
+
+- 建议 JDK 17+
+- AGP 8.10.x 推荐安装 NDK `27.0.12077973`
+- 若出现 `Unable to strip ... libjutils.so`，通常是本机缺少 NDK strip 工具，不是业务代码错误
 
 ## 项目结构
 
-```
-MoodyMusicForAndroid/
-├── app/                                    # 应用模块
-│   └── src/main/java/com/example/moodymusicforandroid/
-│       ├── receiver/                       # 推送信号处理
-│       ├── ui/                             # 各业务模块 (Home, Social, Music)
-│       └── MoodyMusicApplication.kt        # 初始化入口
-├── commonbase/                             # 基础库模块 (Base, Network, Data)
-└── gradle/                                 # 依赖版本目录 (libs.versions.toml)
+```text
+app/                # 应用层（Activity/Fragment/ViewModel/UI 资源）
+commonbase/         # 基础层（Base 类、网络、数据模型、公共能力）
+gradle/             # 版本目录（libs.versions.toml）
 ```
 
 ## 维护说明
 
-- **Git 优化**: 移除了所有构建缓存（.gradle, .gradle-user-home），保持仓库整洁。
-- **构建指南**: 建议在资源冲突时运行 `gradlew clean assembleDebug`。
-
----
-**Maintainer**: zhangjing
-**License**: MIT
+- 本仓库使用 MVVM + BaseActivity/BaseFragment/BaseViewModel 模式
+- 网络请求统一走 `BaseViewModel.request()`
+- 新增依赖请优先修改 `libs.versions.toml`
