@@ -79,6 +79,9 @@
     <color name="classroom_metal_leg">#95a5a6</color>
     <color name="classroom_metal_leg_shadow">#7f8c8d</color>
     <color name="classroom_metal_leg_subtle">#1AFFFFFF</color>
+    <color name="classroom_status_unclaimed">#B38E63</color>
+    <color name="classroom_status_claimed_offline">#4EA96A</color>
+    <color name="classroom_status_claimed_online">#5F7F92</color>
     <!-- Ocean Theme Palette -->
     <color name="ocean_primary">#0077be</color>
     <color name="ocean_on_primary">#ffffff</color>

@@ -34,28 +34,29 @@ class SeatAdapter(
         fun bind(item: RosterItem) {
             val position = bindingAdapterPosition
             if (position == RecyclerView.NO_POSITION) return
+            val context = binding.root.context
 
-            binding.tvSeatNumber.text = String.format("%02d", position + 1)
+            val displaySeatCode = item.seatCode.trim().uppercase()
+            binding.tvSeatNumber.text = if (displaySeatCode.isNotBlank()) displaySeatCode else String.format("%02d", position + 1)
             binding.tvSeatName.text = if (item.realName.isBlank()) "\u5f85\u8ba4\u9886" else item.realName
 
-            if (position < columnCount) {
-                binding.tvColumnIndex.visibility = View.VISIBLE
-                binding.tvColumnIndex.text = (position + 1).toString()
-            } else {
-                binding.tvColumnIndex.visibility = View.GONE
-            }
+            binding.tvColumnIndex.visibility = View.GONE
 
-            if (item.isClaimed == 1) {
-                binding.viewDeskBody.setBackgroundResource(R.drawable.bg_seat_card_minimal_claimed)
-                binding.viewOccupiedOverlay.visibility = View.VISIBLE
-                binding.tvSeatName.setTextColor(binding.root.context.getColor(R.color.classroom_wood_shadow))
-                binding.tvSeatNumber.setTextColor(binding.root.context.getColor(R.color.classroom_wood_shadow))
+            // Seat card tone stays stable; seat-code text color indicates status.
+            binding.viewDeskBody.setBackgroundResource(R.drawable.bg_seat_card_minimal)
+            binding.viewOccupiedOverlay.visibility = View.GONE
+            binding.tvSeatName.setTextColor(context.getColor(R.color.classroom_wood_shadow))
+            binding.tvSeatNumber.setTextColor(context.getColor(R.color.classroom_status_unclaimed))
+
+            val statusText = item.status.trim().lowercase()
+            val statusColor = if (item.isClaimed != 1) {
+                context.getColor(R.color.classroom_status_unclaimed)
+            } else if (statusText.contains("online") && !statusText.contains("offline")) {
+                context.getColor(R.color.classroom_status_claimed_online)
             } else {
-                binding.viewDeskBody.setBackgroundResource(R.drawable.bg_seat_card_minimal)
-                binding.viewOccupiedOverlay.visibility = View.GONE
-                binding.tvSeatName.setTextColor(binding.root.context.getColor(R.color.classroom_wood_shadow))
-                binding.tvSeatNumber.setTextColor(binding.root.context.getColor(R.color.classroom_wood_shadow))
+                context.getColor(R.color.classroom_status_claimed_offline)
             }
+            binding.tvSeatNumber.setTextColor(statusColor)
 
             binding.root.setOnClickListener {
                 onSeatClick(item)

@@ -108,11 +108,25 @@
 
         <!-- Wooden Platform (讲台) -->
         <TextView
+            android:id="@+id/tvTeacherHint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:alpha="0.52"
+            android:text="@string/platform_teacher_hint"
+            android:textColor="#A8FFFFFF"
+            android:textSize="9sp"
+            app:layout_constraintBottom_toTopOf="@id/tvPlatform"
+            app:layout_constraintEnd_toEndOf="@id/tvPlatform"
+            app:layout_constraintStart_toStartOf="@id/tvPlatform" />
+
+        <TextView
             android:id="@+id/tvPlatform"
             android:layout_width="120dp"
             android:layout_height="32dp"
             android:layout_marginTop="24dp"
             android:background="@drawable/bg_desk_wood"
+            android:elevation="2dp"
             android:gravity="center"
             android:paddingBottom="4dp"
             android:text="@string/platform_label"
@@ -123,26 +137,16 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/layoutBlackboard" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:text="@string/platform_teacher_hint"
-            android:textColor="#50FFFFFF"
-            android:textSize="9sp"
-            app:layout_constraintEnd_toEndOf="@id/tvPlatform"
-            app:layout_constraintStart_toStartOf="@id/tvPlatform"
-            app:layout_constraintTop_toBottomOf="@id/tvPlatform" />
-
         <!-- Seats Full-Class View (Horizontal Scan + Vertical Scroll) -->
         <com.example.moodymusicforandroid.ui.classroom.view.ClassroomScrollContainer
             android:id="@+id/hsvClassroom"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:layout_marginBottom="12dp"
             android:layout_marginTop="16dp"
             android:overScrollMode="never"
             android:scrollbars="none"
-            app:layout_constraintBottom_toTopOf="@id/layoutLegend"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvPlatform">
 
             <androidx.recyclerview.widget.RecyclerView
@@ -160,56 +164,28 @@
         <!-- Top Indicator Bar (Decorative Red/Blue/Gray) -->
         <LinearLayout
             android:id="@+id/layoutIndicator"
-            android:layout_width="60dp"
+            android:layout_width="44dp"
             android:layout_height="4dp"
             android:layout_marginStart="20dp"
             android:layout_marginTop="4dp"
             android:orientation="horizontal"
+            android:contentDescription="Seat status tones"
             app:layout_constraintStart_toStartOf="@id/layoutBlackboard"
             app:layout_constraintTop_toBottomOf="@id/layoutBlackboard">
-            <View android:layout_width="12dp" android:layout_height="match_parent" android:background="#8C4D4D" android:layout_marginEnd="4dp" />
-            <View android:layout_width="12dp" android:layout_height="match_parent" android:background="#628C4D" android:layout_marginEnd="4dp" />
-            <View android:layout_width="12dp" android:layout_height="match_parent" android:background="#4D628C" />
-        </LinearLayout>
-
-        <!-- Legend (Legend area at bottom) -->
-        <LinearLayout
-            android:id="@+id/layoutLegend"
-            android:layout_width="wrap_content"
-            android:layout_height="28dp"
-            android:layout_marginBottom="24dp"
-            android:background="@drawable/bg_stat_capsule"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:paddingHorizontal="16dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
-
             <View
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:background="@color/classroom_wood_bright" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:text="@string/status_unclaimed"
-                android:textColor="#A0FFFFFF"
-                android:textSize="10sp" />
-
+                android:layout_width="12dp"
+                android:layout_height="match_parent"
+                android:background="@color/classroom_status_unclaimed"
+                android:layout_marginEnd="4dp" />
             <View
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:layout_marginStart="20dp"
-                android:background="#406040" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:text="@string/label_claimed"
-                android:textColor="#A0FFFFFF"
-                android:textSize="10sp" />
+                android:layout_width="12dp"
+                android:layout_height="match_parent"
+                android:background="@color/classroom_status_claimed_offline"
+                android:layout_marginEnd="4dp" />
+            <View
+                android:layout_width="12dp"
+                android:layout_height="match_parent"
+                android:background="@color/classroom_status_claimed_online" />
         </LinearLayout>
 
         <!-- Back Button Overlay -->

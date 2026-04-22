@@ -17,6 +17,7 @@ import com.example.moodymusicforandroid.data.model.User
 import com.example.moodymusicforandroid.data.model.VerifyClaimRequest
 import com.example.moodymusicforandroid.data.model.VerifyClaimResponse
 import java.security.MessageDigest
+import java.util.Locale
 
 class ClassroomViewModel : BaseViewModel() {
 
@@ -29,28 +30,28 @@ class ClassroomViewModel : BaseViewModel() {
         request {
             val response = MoodyApiProvider.apiService.getRoster()
             if (response.isSuccess()) {
-                val fullRoster = response.roster.toMutableList()
-
-                val targetCount = 64
-                if (fullRoster.size < targetCount) {
-                    for (i in (fullRoster.size + 1)..targetCount) {
-                        fullRoster.add(
-                            RosterItem(
-                                id = -i,
-                                realName = "空位",
-                                yearCode = "2024",
-                                seatCode = i.toString().padStart(2, '0'),
-                                isClaimed = 0,
-                                status = "available"
-                            )
-                        )
-                    }
-                }
-
-                classroomData.postValue(response.copy(roster = fullRoster))
+                val sortedRoster = response.roster.sortedWith(
+                    compareBy<RosterItem> { seatRowIndex(it) }
+                        .thenBy { seatColumnIndex(it) }
+                        .thenBy { it.sortIndex ?: Int.MAX_VALUE }
+                        .thenBy { it.seatCode }
+                )
+                classroomData.postValue(response.copy(roster = sortedRoster))
             }
             response
         }
+    }
+
+    private fun seatRowIndex(item: RosterItem): Int {
+        val code = item.seatCode.trim().uppercase(Locale.ROOT)
+        val rowPart = if (code.length >= 3) code.substring(1) else ""
+        return rowPart.toIntOrNull() ?: Int.MAX_VALUE
+    }
+
+    private fun seatColumnIndex(item: RosterItem): Int {
+        val code = item.seatCode.trim().uppercase(Locale.ROOT)
+        val columnChar = code.firstOrNull() ?: return Int.MAX_VALUE
+        return if (columnChar in 'A'..'Z') columnChar.code - 'A'.code else Int.MAX_VALUE
     }
 
     fun verifyClaim(rosterId: Int, answers: List<String>) {

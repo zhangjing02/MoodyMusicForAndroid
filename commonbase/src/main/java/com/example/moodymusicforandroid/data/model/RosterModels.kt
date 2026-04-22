@@ -8,6 +8,7 @@ data class RosterItem(
     @SerializedName("real_name") val realName: String,
     @SerializedName("year_code") val yearCode: String,
     @SerializedName("seat_code") val seatCode: String,
+    @SerializedName("sort_index") val sortIndex: Int? = null,
     @SerializedName("is_claimed") val isClaimed: Int,
     @SerializedName("status") val status: String = "available"
 )
