@@ -97,10 +97,19 @@ class ClassroomViewModel : BaseViewModel() {
             val loginData = response.data
             val backendUser = loginData?.user
             if (response.isSuccess() && backendUser != null) {
-                // 将后端返回的 token/refreshToken 注入 User（因后端单独返回，不在 user 对象内）
-                val user = backendUser.copy(
+                // 某些历史账号返回 nickname = null，直接调用 copy() 会触发 Kotlin 非空参数崩溃。
+                // 这里使用安全重建，避免依赖反序列化后的潜在脏值。
+                val safeUserName = backendUser.username.ifBlank { "同学" }
+                val user = User(
+                    userId = backendUser.userId,
+                    username = safeUserName,
+                    nickname = safeUserName,
+                    avatarUrl = backendUser.avatarUrl,
                     token = loginData.token ?: backendUser.token,
-                    refreshToken = loginData.refreshToken ?: backendUser.refreshToken
+                    refreshToken = loginData.refreshToken ?: backendUser.refreshToken,
+                    createdAt = backendUser.createdAt,
+                    favoriteCount = backendUser.favoriteCount,
+                    followCount = backendUser.followCount
                 )
                 saveLoginState(user)
                 loginResult.postValue(user)
