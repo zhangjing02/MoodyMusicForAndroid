@@ -14,8 +14,15 @@ import com.example.moodymusicforandroid.data.model.RosterItem
 import com.example.moodymusicforandroid.databinding.ActivityClassroomBinding
 import com.example.moodymusicforandroid.ui.classroom.adapter.SeatAdapter
 import com.example.moodymusicforandroid.ui.classroom.viewmodel.ClassroomViewModel
+import com.example.moodymusicforandroid.receiver.JPushReceiver
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputLayout
+import cn.jpush.android.api.JPushInterface
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 class ClassroomActivity : BaseActivity<ActivityClassroomBinding, ClassroomViewModel>() {
 
@@ -27,6 +34,19 @@ class ClassroomActivity : BaseActivity<ActivityClassroomBinding, ClassroomViewMo
     private var claimInputFields: List<EditText> = emptyList()
 
     private var claimFinalizeDialog: AlertDialog? = null
+    private var currentClassId: Int? = null
+
+    /**
+     * 监听来自 JPushReceiver 的刷新广播
+     */
+    private val refreshReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val classId = intent?.getStringExtra(JPushReceiver.EXTRA_CLASS_ID)
+            android.util.Log.d("ClassroomActivity", "收到刷新广播，classId: $classId")
+            // 只要是在当前教室，就刷新
+            viewModel.fetchRoster()
+        }
+    }
 
     override fun getViewModelClass() = ClassroomViewModel::class.java
 
@@ -37,11 +57,28 @@ class ClassroomActivity : BaseActivity<ActivityClassroomBinding, ClassroomViewMo
         setupUI()
         observeViewModel()
         viewModel.fetchRoster()
+
+        // 注册刷新广播接收器
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            refreshReceiver,
+            IntentFilter(JPushReceiver.BROADCAST_ACTION_REFRESH_ROSTER)
+        )
     }
 
     override fun onDestroy() {
         claimVerifyDialog?.dismiss()
         claimFinalizeDialog?.dismiss()
+        
+        // 取消注册广播
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(refreshReceiver)
+        
+        // 取消订阅 JPush Tag
+        currentClassId?.let { id ->
+            val tag = "classroom_$id"
+            android.util.Log.d("ClassroomActivity", "退出页面，取消订阅 tag: $tag")
+            JPushInterface.deleteTags(this, 100, setOf(tag))
+        }
+
         super.onDestroy()
     }
 
@@ -69,6 +106,20 @@ class ClassroomActivity : BaseActivity<ActivityClassroomBinding, ClassroomViewMo
     private fun observeViewModel() {
         viewModel.classroomData.observe(this) { data ->
             adapter.submitList(data.roster)
+
+            // 处理 JPush Tag 订阅逻辑
+            data.classId?.let { newId ->
+                if (currentClassId != newId) {
+                    // 如果班级变了，先删掉旧的（虽然通常页面内不会变）
+                    currentClassId?.let { oldId ->
+                        JPushInterface.deleteTags(this, 101, setOf("classroom_$oldId"))
+                    }
+                    currentClassId = newId
+                    val tag = "classroom_$newId"
+                    android.util.Log.d("ClassroomActivity", "订阅班级推送 tag: $tag")
+                    JPushInterface.setTags(this, 102, setOf(tag))
+                }
+            }
 
             binding.tvBlackboardTitle.text = "同学录 · 青春到此一游"
             binding.tvBlackboardHint.text = "点击你的姓名认领座位"

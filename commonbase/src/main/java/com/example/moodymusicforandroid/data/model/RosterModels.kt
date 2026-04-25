@@ -21,6 +21,7 @@ data class SecurityQuestion(
 data class RosterResponse(
     @SerializedName("code") override val code: Int,
     @SerializedName("message") override val message: String? = null,
+    @SerializedName("class_id") val classId: Int? = null,
     @SerializedName("roster") val roster: List<RosterItem>,
     @SerializedName("security_questions") val securityQuestions: List<SecurityQuestion>? = null
 ) : ApiResponse<RosterResponse> {
