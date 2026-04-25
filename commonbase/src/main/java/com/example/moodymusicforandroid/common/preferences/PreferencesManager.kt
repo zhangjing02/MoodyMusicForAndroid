@@ -40,6 +40,7 @@ object PreferencesManager {
     private const val KEY_CLASS_ID = "class_id"
     private const val KEY_IS_LOGGED_IN = "is_logged_in"
     private const val KEY_DEVICE_ID = "device_id"
+    private const val KEY_APP_VERSION = "app_version"
 
     // 设置相关的键名
     private const val KEY_THEME_MODE = "theme_mode"
@@ -51,6 +52,14 @@ object PreferencesManager {
      */
     fun init(context: Context) {
         prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        
+        // 保存当前版本号
+        try {
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            putString(KEY_APP_VERSION, packageInfo.versionName)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     /**
@@ -328,6 +337,13 @@ object PreferencesManager {
             putString(KEY_DEVICE_ID, deviceId)
         }
         return deviceId
+    }
+
+    /**
+     * 获取 App 版本号
+     */
+    fun getAppVersion(): String {
+        return getString(KEY_APP_VERSION, "1.0.0") ?: "1.0.0"
     }
 
     /**

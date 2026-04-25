@@ -41,6 +41,7 @@ object RetrofitClient {
 
         try {
             requestBuilder.header("X-Client-Type", "android")
+            requestBuilder.header("X-App-Version", PreferencesManager.getAppVersion())
             requestBuilder.header("X-Device-Id", PreferencesManager.getDeviceId())
 
             val token = PreferencesManager.getUserToken()
