@@ -24,23 +24,23 @@ MoodyMusicForAndroid 目前包含三条核心业务线：
 - `app/src/main/java/com/example/moodymusicforandroid/ui/classroom/activity/ClassroomActivity.kt`
 - `app/src/main/java/com/example/moodymusicforandroid/ui/classroom/viewmodel/ClassroomViewModel.kt`
 
-### 2. 专辑社交模块（已接入）
+### 2. 专辑社交模块 (V2 班级隔离版)
 
-- 拉取专辑下主贴与回复：`GET /api/albums/{albumId}/social_content`
-- 发布主贴：`POST /api/albums/{albumId}/posts`
-- 发布评论：`POST /api/albums/posts/{postId}/comments`
-- 在 `LibraryFragment` 内嵌社交区并支持发送后刷新
+- **班级隔离**：仅限已认领座位的班级成员查看所属班级的讨论。
+- **访客屏蔽**：未登录或访客身份访问将触发 403，UI 自动隐藏。
+- **聚合接口**：`GET /api/albums/{albumId}/social_content` 返回“主贴+平铺回复”。
+- **发布讨论**：`POST /api/albums/{albumId}/posts` (自动关联班级 ID)。
+- **发布评论**：`POST /api/albums/posts/{postId}/comments`。
 
 关键代码：
 - `app/src/main/java/com/example/moodymusicforandroid/ui/music/viewmodel/AlbumSocialViewModel.kt`
 - `app/src/main/java/com/example/moodymusicforandroid/ui/home/LibraryFragment.kt`
 
-### 3. JPush 信号驱动刷新（已接入）
+### 3. JPush 信号驱动刷新
 
-- 应用启动时初始化 JPush SDK
-- `JPushReceiver` 解析透传消息 `FETCH_NEW`
-- 前台可见时通过 `LocalBroadcast` 触发即时刷新
-- 后台时打脏标记，回到前台后消费刷新
+- **Tag 策略**：动态绑定 `album_{albumId}_class_{classId}` 实现精准通知。
+- **透传逻辑**：解析 `refresh_comments` 透传消息，Extras 携带 `action: "FETCH_NEW"`。
+- **刷新机制**：前台即时 LocalBroadcast，后台打脏标记（Dirty Flag）待回前台刷新。
 - 页面生命周期中动态绑定/清理 tag
 
 关键代码：

@@ -51,6 +51,12 @@ class LibraryFragment : BaseFragment<FragmentLibraryBinding, LibraryViewModel>()
         // 2. Setup Social Discussion Section (Social Feature logic)
         binding.rvReplies.layoutManager = LinearLayoutManager(requireContext())
         
+        // 重试按钮逻辑
+        binding.btnRetry.setOnClickListener {
+            binding.llRetryArea.visibility = View.GONE
+            socialViewModel.fetchSocialContent(currentAlbumId)
+        }
+
         // 发送按钮逻辑
         binding.btnSend.setOnClickListener {
             val content = binding.etComment.text.toString()
@@ -63,22 +69,34 @@ class LibraryFragment : BaseFragment<FragmentLibraryBinding, LibraryViewModel>()
                 socialViewModel.postReply(social.id, currentAlbumId, content)
             }
             binding.etComment.setText("")
+            binding.etComment.hint = "说点什么..."
         }
 
         // 观察社交内容变化
         socialViewModel.socialContent.observe(viewLifecycleOwner) { content ->
             if (content != null) {
+                binding.llRetryArea.visibility = View.GONE
                 binding.llSocialSection.visibility = View.VISIBLE
                 binding.cardMainPost.visibility = View.VISIBLE
                 binding.tvMainPostContent.text = content.content
                 binding.tvMainPostAuthor.text = "来自: ${content.author.username}"
                 binding.tvMainPostTime.text = content.createdAt
                 
-                binding.rvReplies.adapter = AlbumSocialAdapter(content.replies)
+                binding.rvReplies.adapter = AlbumSocialAdapter(content.replies) { reply ->
+                    binding.etComment.hint = "回复 @${reply.author.username}:"
+                    binding.etComment.requestFocus()
+                }
             } else {
-                // 如果没有内容，暂时隐藏社交模块或保持现状
                 binding.cardMainPost.visibility = View.GONE
                 binding.rvReplies.adapter = null
+            }
+        }
+
+        // 观察错误状态以驱动 Retry UI
+        socialViewModel.errorMessage.observe(viewLifecycleOwner) { errorMsg ->
+            if (!errorMsg.isNullOrEmpty() && socialViewModel.socialContent.value == null) {
+                binding.llRetryArea.visibility = View.VISIBLE
+                binding.tvErrorMessage.text = errorMsg
             }
         }
     }

@@ -55,6 +55,33 @@
                     android:fontFamily="serif"
                     android:layout_marginBottom="24dp" />
 
+                <!-- Retry Container when error occurs -->
+                <LinearLayout
+                    android:id="@+id/llRetryArea"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="20dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/tvErrorMessage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="网络连接或加载异常"
+                        android:textColor="@color/on_surface_variant"
+                        android:textSize="14sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnRetry"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="点击重试"
+                        app:cornerRadius="20dp" />
+                </LinearLayout>
+
                 <!-- Main Post Card -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardMainPost"
