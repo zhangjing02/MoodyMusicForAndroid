@@ -1,5 +1,7 @@
 package com.example.moodymusicforandroid.common.network
 
+import com.example.moodymusicforandroid.data.model.HomeFeedResponse
+import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -8,6 +10,12 @@ import retrofit2.http.Query
  * 所有网络请求接口都定义在这里
  */
 interface ApiService {
+
+    /**
+     * 获取首页切片流数据 (SDUI)
+     */
+    @GET("api/home/feed")
+    suspend fun getHomeFeed(): Response<HomeFeedResponse>
 
     /**
      * 示例：根据心情获取音乐列表

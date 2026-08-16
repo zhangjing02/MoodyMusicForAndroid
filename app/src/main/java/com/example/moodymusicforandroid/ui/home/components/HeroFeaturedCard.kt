@@ -29,6 +29,11 @@ import com.example.moodymusicforandroid.ui.theme.SongbookColors
 fun HeroFeaturedCard(
     modifier: Modifier = Modifier,
     imageUrl: String = "https://m-api.changgepd.top/storage/covers/hero/hero_acoustic_guitar.jpg",
+    title: String = "回响：寻找消失的黑胶灵魂",
+    tag: String = "深度专题 / DEEP DIVE",
+    summary: String = "在数字化的浪潮中，我们如何通过物理的震动重新找回听觉的本真？这是一场跨越半个世纪的模拟信号寻访。",
+    primaryActionText: String = "阅读专题",
+    secondaryActionText: String = "聆听专辑",
     onReadArticleClick: () -> Unit = {},
     onPlayAlbumClick: () -> Unit = {}
 ) {
@@ -89,7 +94,7 @@ fun HeroFeaturedCard(
             ) {
                 // 专题标签
                 Text(
-                    text = "深度专题 / DEEP DIVE",
+                    text = tag,
                     style = MaterialTheme.typography.labelSmall,
                     color = SongbookColors.TerracottaBrown,
                     fontWeight = FontWeight.Bold
@@ -99,7 +104,7 @@ fun HeroFeaturedCard(
 
                 // 核心大标题 (Serif)
                 Text(
-                    text = "回响：寻找消失的黑胶灵魂",
+                    text = title,
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold,
@@ -110,7 +115,7 @@ fun HeroFeaturedCard(
 
                 // 文艺导语
                 Text(
-                    text = "在数字化的浪潮中，我们如何通过物理的震动重新找回听觉的本真？这是一场跨越半个世纪的模拟信号寻访。",
+                    text = summary,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontStyle = FontStyle.Italic,
@@ -134,7 +139,7 @@ fun HeroFeaturedCard(
                         contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
                     ) {
                         Text(
-                            text = "阅读专题",
+                            text = primaryActionText,
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Medium
                         )
@@ -150,7 +155,7 @@ fun HeroFeaturedCard(
                         contentPadding = PaddingValues(horizontal = 18.dp, vertical = 12.dp)
                     ) {
                         Text(
-                            text = "聆听专辑",
+                            text = secondaryActionText,
                             style = MaterialTheme.typography.labelLarge
                         )
                     }

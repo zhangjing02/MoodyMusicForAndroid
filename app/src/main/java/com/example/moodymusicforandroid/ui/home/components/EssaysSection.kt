@@ -17,17 +17,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.moodymusicforandroid.data.model.EssayItemData
 import com.example.moodymusicforandroid.ui.theme.SongbookColors
 
 /**
- * 随笔文章数据模型
+ * 兼容旧数据模型（别名）
  */
-data class EssayArticle(
-    val id: String,
-    val date: String,
-    val title: String,
-    val summary: String
-)
+typealias EssayArticle = EssayItemData
 
 /**
  * 首页文艺随笔列表组件 (EssaysSection)
@@ -36,33 +32,16 @@ data class EssayArticle(
 @Composable
 fun EssaysSection(
     modifier: Modifier = Modifier,
+    title: String = "选集随笔",
+    essays: List<EssayItemData> = defaultEssays,
     onArticleClick: (String) -> Unit = {}
 ) {
-    val essays = listOf(
-        EssayArticle(
-            id = "essay_1",
-            date = "OCT 22, 2023",
-            title = "当我们在听莫扎特时，我们在想些什么？",
-            summary = "不仅仅是旋律的优美，更是一种秩序的重建。莫扎特的音乐中隐藏着宇宙最初的几何结构。每当我们感到世界的混乱，那一组组跳跃的音符就像是精准的坐标..."
-        ),
-        EssayArticle(
-            id = "essay_2",
-            date = "OCT 19, 2023",
-            title = "木吉他：一种触觉的乡愁",
-            summary = "指尖划过琴弦的声音，是数字化永远无法模拟的颗粒感。那是一种带着温度的物理接触，是树木干枯后依旧在空气中颤动的生命。每一把吉他都有它独特的性格..."
-        ),
-        EssayArticle(
-            id = "essay_3",
-            date = "OCT 15, 2023",
-            title = "声波中的建筑学：论环境音乐与空间构筑",
-            summary = "当旋律退居为背景，空间本身的质感便浮现出来。声音不再是填补沉默的实体，而是丈量光影与空气流动的一把隐形标尺..."
-        )
-    )
+    val items = if (essays.isNotEmpty()) essays else defaultEssays
 
     Column(modifier = modifier.fillMaxWidth()) {
         // 栏目标题
         Text(
-            text = "选集随笔",
+            text = title,
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface,
             fontWeight = FontWeight.Bold,
@@ -73,7 +52,7 @@ fun EssaysSection(
         Column(
             verticalArrangement = Arrangement.spacedBy(28.dp)
         ) {
-            essays.forEach { essay ->
+            items.forEach { essay ->
                 EssayItem(
                     essay = essay,
                     onClick = { onArticleClick(essay.id) }
@@ -83,9 +62,30 @@ fun EssaysSection(
     }
 }
 
+private val defaultEssays = listOf(
+    EssayItemData(
+        id = "essay_1",
+        date = "OCT 22, 2023",
+        title = "当我们在听莫扎特时，我们在想些什么？",
+        summary = "不仅仅是旋律的优美，更是一种秩序的重建。莫扎特的音乐中隐藏着宇宙最初的几何结构。每当我们感到世界的混乱，那一组组跳跃的音符就像是精准的坐标..."
+    ),
+    EssayItemData(
+        id = "essay_2",
+        date = "OCT 19, 2023",
+        title = "木吉他：一种触觉的乡愁",
+        summary = "指尖划过琴弦的声音，是数字化永远无法模拟的颗粒感。那是一种带着温度的物理接触，是树木干枯后依旧在空气中颤动的生命。每一把吉他都有它独特的性格..."
+    ),
+    EssayItemData(
+        id = "essay_3",
+        date = "OCT 15, 2023",
+        title = "声波中的建筑学：论环境音乐与空间构筑",
+        summary = "当旋律退居为背景，空间本身的质感便浮现出来。声音不再是填补沉默的实体，而是丈量光影与空气流动的一把隐形标尺..."
+    )
+)
+
 @Composable
 private fun EssayItem(
-    essay: EssayArticle,
+    essay: EssayItemData,
     onClick: () -> Unit
 ) {
     val timelineColor = SongbookColors.BurntOrange.copy(alpha = 0.25f)

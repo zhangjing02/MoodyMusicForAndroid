@@ -10,6 +10,13 @@ import retrofit2.http.*
 interface MoodyApiService {
 
     /**
+     * 获取首页切片流 (SDUI)
+     * GET /api/home/feed
+     */
+    @GET("api/home/feed")
+    suspend fun getHomeFeed(): BaseResponse<HomeFeedResponse>
+
+    /**
      * 获取艺人列表（骨架数据）
      * GET /api/skeleton?group=A
      */
