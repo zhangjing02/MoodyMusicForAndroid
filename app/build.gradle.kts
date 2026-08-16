@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -26,7 +28,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -43,6 +46,7 @@ android {
     buildFeatures {
         dataBinding = true
         viewBinding = true
+        compose = true
     }
     packaging {
         resources {
@@ -59,14 +63,33 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.fragment.compose)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
+
+    // Compose & Navigation 3
+    val composeBom = platform(libs.compose.bom)
+    implementation(composeBom)
+    androidTestImplementation(composeBom)
+    implementation(libs.compose.ui)
+    implementation(libs.compose.ui.tooling.preview)
+    implementation(libs.compose.material3)
+    implementation(libs.activity.compose)
+    implementation("androidx.compose.runtime:runtime-livedata")
+    debugImplementation(libs.compose.ui.tooling)
+
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    implementation(libs.kotlinx.serialization.json)
 
     // Material & UI
     implementation(libs.androidx.material)
     implementation(libs.androidx.constraintlayout)
 
-    // UI Widget Helper - 圆角、边框、渐变、状态切换
+    // UI Widget Helper - BlurView
+    implementation(libs.blurview)
     implementation(libs.rwidget.helper)
+
 
     // JPush
     implementation(libs.jpush)

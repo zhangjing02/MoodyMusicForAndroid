@@ -1,293 +1,361 @@
 package com.example.moodymusicforandroid.ui.home.activity
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.Gravity
-import android.view.View
-import android.widget.RadioGroup
-import androidx.core.view.GravityCompat
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsControllerCompat
-import androidx.fragment.app.Fragment
-import androidx.viewpager2.adapter.FragmentStateAdapter
-import android.content.Intent
+import android.widget.Toast
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.ui.NavDisplay
 import com.example.moodymusicforandroid.MoodyMusicApplication
-import com.example.moodymusicforandroid.R
-import com.example.moodymusicforandroid.base.BaseActivity
 import com.example.moodymusicforandroid.common.eventbus.BaseEvent
 import com.example.moodymusicforandroid.common.eventbus.EventBusManager
 import com.example.moodymusicforandroid.common.eventbus.EventType
 import com.example.moodymusicforandroid.common.preferences.PreferencesManager
+import com.example.moodymusicforandroid.common.utils.AppFlags
 import com.example.moodymusicforandroid.common.utils.FontManager
 import com.example.moodymusicforandroid.common.utils.ThemeManager
-import com.example.moodymusicforandroid.databinding.ActivityMainBinding
-import com.example.moodymusicforandroid.databinding.NavigationDrawerBinding
+import com.example.moodymusicforandroid.ui.album.AlbumDetailScreen
+import com.example.moodymusicforandroid.ui.artist.ArtistDetailScreen
+import com.example.moodymusicforandroid.ui.auth.activity.LoginActivity
 import com.example.moodymusicforandroid.ui.classroom.activity.ClassroomActivity
-import com.example.moodymusicforandroid.ui.home.DiscoverFragment
-import com.example.moodymusicforandroid.ui.home.HomeFragment
-import com.example.moodymusicforandroid.ui.home.LibraryFragment
+import com.example.moodymusicforandroid.ui.home.DiscoverScreen
+import com.example.moodymusicforandroid.ui.home.HomeScreen
+import com.example.moodymusicforandroid.ui.home.LibraryScreen
+import com.example.moodymusicforandroid.ui.home.components.AppDrawerContent
+import com.example.moodymusicforandroid.ui.home.components.FloatingMiniPlayer
+import com.example.moodymusicforandroid.ui.home.components.MainBottomBar
 import com.example.moodymusicforandroid.ui.home.viewmodel.MainViewModel
+import com.example.moodymusicforandroid.ui.navigation.*
+import com.example.moodymusicforandroid.ui.theme.SongbookTheme
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import kotlin.math.roundToInt
 
 /**
- * 主Activity
- * 使用泛型基类，简化代码
- * 包含 ViewPager2 和底部导航
+ * 应用的主 Activity，承担单 Activity 架构的宿主角色。
  */
-class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
+class MainActivity : AppCompatActivity() {
 
     private val TAG = "MainActivity"
+    private val viewModel: MainViewModel by viewModels()
 
-    private lateinit var viewPagerAdapter: MainViewPagerAdapter
-    private lateinit var drawerBinding: NavigationDrawerBinding
-
-    // 在 onCreate 之前设置主题
     override fun onCreate(savedInstanceState: Bundle?) {
-        // 在调用 super.onCreate() 之前应用组合主题（字体 + 颜色）
         setTheme(MoodyMusicApplication.currentThemeResId)
         super.onCreate(savedInstanceState)
-    }
-
-    override fun getViewModelClass() = MainViewModel::class.java
-
-    override fun getLayoutId() = R.layout.activity_main
-
-    override fun initView() {
-        super.initView()
-        setupImmersiveStatusBar() // 设置沉浸式状态栏
-        setupViewPager()
-        setupBottomNavigation()
-        setupDrawer()
-        setupThemeAndFont()
-        updateUserInfoUI() // 初始化用户信息显示
-    }
-
-    /**
-     * 设置沉浸式状态栏
-     */
-    private fun setupImmersiveStatusBar() {
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-
-        val insetsController = WindowInsetsControllerCompat(window, window.decorView)
-        insetsController.systemBarsBehavior =
-            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        insetsController.isAppearanceLightStatusBars = true
-        insetsController.isAppearanceLightNavigationBars = true
-    }
-
-    private fun setupViewPager() {
-        viewPagerAdapter = MainViewPagerAdapter(this)
-        binding.viewPager.apply {
-            adapter = viewPagerAdapter
-            isUserInputEnabled = false // 禁用手动滑动，只通过底部导航切换
-            offscreenPageLimit = 2 // 预加载所有页面
-        }
-    }
-
-    private fun setupBottomNavigation() {
-        binding.bottomNavigationView.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.nav_home -> {
-                    binding.viewPager.currentItem = 0
-                    updateTitle("音信")
-                    true
-                }
-                R.id.nav_discover -> {
-                    binding.viewPager.currentItem = 1
-                    updateTitle("发现")
-                    true
-                }
-                R.id.nav_library -> {
-                    binding.viewPager.currentItem = 2
-                    updateTitle("收藏")
-                    true
-                }
-                else -> false
-            }
-        }
-    }
-
-    private fun setupDrawer() {
-        // 获取抽屉布局的绑定
-        drawerBinding = binding.navigationDrawer as NavigationDrawerBinding
-
-        // 菜单图标点击打开抽屉
-        binding.ivMenu.setOnClickListener {
-            binding.drawerLayout.openDrawer(GravityCompat.START)
-        }
-
-        // 关闭按钮点击关闭抽屉
-        drawerBinding.ivCloseDrawer.setOnClickListener {
-            binding.drawerLayout.closeDrawer(GravityCompat.START)
-        }
-
-        // 教室认证点击
-        drawerBinding.btnClassroomAuth.setOnClickListener {
-            binding.drawerLayout.closeDrawer(GravityCompat.START)
-            startActivity(Intent(this, ClassroomActivity::class.java))
-        }
-
-        // 注销点击
-        drawerBinding.btnLogout.setOnClickListener {
-            binding.drawerLayout.closeDrawer(GravityCompat.START)
-            PreferencesManager.clearUserInfo()
-            EventBusManager.post(EventType.USER_LOGOUT, "用户退出登录")
-            showToast("已退出当前认证")
-        }
-
-        // 点击抽屉外部区域关闭抽屉
-        binding.drawerLayout.setDrawerLockMode(androidx.drawerlayout.widget.DrawerLayout.LOCK_MODE_UNLOCKED)
-    }
-
-    private fun setupThemeAndFont() {
-        // 初始化主题
+        
+        enableEdgeToEdge()
+        EventBusManager.register(this)
         ThemeManager.initTheme(this)
 
-        // 主题切换监听 - 直接响应点击，不检查 isChecked
-        drawerBinding.rbThemeDefault.setOnClickListener {
-            ThemeManager.setTheme(this, ThemeManager.ThemeMode.DEFAULT)
-            (application as MoodyMusicApplication).updateTheme()
-            showToast("已切换至默认绿主题")
-            recreate() // 重新创建Activity以应用新颜色主题
-        }
-
-        drawerBinding.rbThemeOcean.setOnClickListener {
-            ThemeManager.setTheme(this, ThemeManager.ThemeMode.OCEAN)
-            (application as MoodyMusicApplication).updateTheme()
-            showToast("已切换至海洋蓝主题")
-            recreate()
-        }
-
-        drawerBinding.rbThemeSunset.setOnClickListener {
-            ThemeManager.setTheme(this, ThemeManager.ThemeMode.SUNSET)
-            (application as MoodyMusicApplication).updateTheme()
-            showToast("已切换至日落橙主题")
-            recreate()
-        }
-
-        drawerBinding.rbThemeNight.setOnClickListener {
-            ThemeManager.setTheme(this, ThemeManager.ThemeMode.NIGHT)
-            (application as MoodyMusicApplication).updateTheme()
-            showToast("已切换至暗夜紫主题")
-            recreate()
-        }
-
-        // 字体切换监听 - 直接响应点击，不改变主题
-        drawerBinding.rbFontHandwriting.setOnClickListener {
-            Log.d(TAG, "Font clicked: HANDWRITING")
-            FontManager.setFontStyle(this, FontManager.FontStyle.HANDWRITING)
-            showToast("字体已切换为：手写飘逸")
-            recreate() // 重新创建Activity，应用新字体
-        }
-
-        drawerBinding.rbFontModern.setOnClickListener {
-            Log.d(TAG, "Font clicked: MODERN")
-            FontManager.setFontStyle(this, FontManager.FontStyle.MODERN)
-            showToast("字体已切换为：现代轻盈")
-            recreate()
-        }
-
-        drawerBinding.rbFontElegant.setOnClickListener {
-            Log.d(TAG, "Font clicked: ELEGANT")
-            FontManager.setFontStyle(this, FontManager.FontStyle.ELEGANT)
-            showToast("字体已切换为：清秀文艺")
-            recreate()
-        }
-
-        // 设置当前选中的主题和字体
-        val currentTheme = ThemeManager.getTheme(this)
-        when (currentTheme) {
-            ThemeManager.ThemeMode.DEFAULT -> drawerBinding.rbThemeDefault.isChecked = true
-            ThemeManager.ThemeMode.OCEAN -> drawerBinding.rbThemeOcean.isChecked = true
-            ThemeManager.ThemeMode.SUNSET -> drawerBinding.rbThemeSunset.isChecked = true
-            ThemeManager.ThemeMode.NIGHT -> drawerBinding.rbThemeNight.isChecked = true
-        }
-
-        val currentFont = FontManager.getFontStyle(this)
-        when (currentFont) {
-            FontManager.FontStyle.HANDWRITING -> drawerBinding.rbFontHandwriting.isChecked = true
-            FontManager.FontStyle.MODERN -> drawerBinding.rbFontModern.isChecked = true
-            FontManager.FontStyle.ELEGANT -> drawerBinding.rbFontElegant.isChecked = true
-        }
-    }
-
-    override fun useEventBus() = true
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    override fun onEventReceived(event: BaseEvent) {
-        super.onEventReceived(event)
-        when (event.eventType) {
-            EventType.USER_LOGIN, EventType.USER_LOGOUT -> {
-                updateUserInfoUI()
+        setContent {
+            val owner = this@MainActivity as androidx.navigationevent.NavigationEventDispatcherOwner
+            CompositionLocalProvider(
+                androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner provides owner
+            ) {
+                SongbookTheme {
+                    MainScreen(
+                        onAuthClick = {
+                            startActivity(Intent(this, ClassroomActivity::class.java))
+                        },
+                        onThemeClick = { mode ->
+                            ThemeManager.setTheme(this, mode)
+                            (application as MoodyMusicApplication).updateTheme()
+                            Toast.makeText(this, "已切换主题", Toast.LENGTH_SHORT).show()
+                            recreate()
+                        },
+                        onFontClick = { style ->
+                            FontManager.setFontStyle(this, style)
+                            Toast.makeText(this, "已切换字体", Toast.LENGTH_SHORT).show()
+                            recreate()
+                        },
+                        onLogoutClick = {
+                            PreferencesManager.clearUserInfo()
+                            EventBusManager.post(EventType.USER_LOGOUT, "用户退出登录")
+                            Toast.makeText(this, "已退出当前认证", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                }
             }
         }
     }
 
-    /**
-     * 更新侧边栏用户信息
-     */
-    private fun updateUserInfoUI() {
-        if (PreferencesManager.isLoggedIn()) {
-            val userName = PreferencesManager.getUserName() ?: "同学"
-            drawerBinding.tvDrawerSubtitle.text = "欢迎回来，$userName"
-            drawerBinding.btnClassroomAuth.text = "已认证"
-            // 已认证状态下禁用认证按钮，显示注销按钮
-            drawerBinding.btnClassroomAuth.isEnabled = false
-            drawerBinding.btnLogout.visibility = View.VISIBLE
-        } else {
-            drawerBinding.tvDrawerSubtitle.text = "听，风吹过的声音"
-            drawerBinding.btnClassroomAuth.text = getString(R.string.classroom_auth)
-            drawerBinding.btnClassroomAuth.isEnabled = true
-            drawerBinding.btnLogout.visibility = View.GONE
+    override fun onResume() {
+        super.onResume()
+        if (AppFlags.showKickOutDialog) {
+            AppFlags.showKickOutDialog = false
+            android.app.AlertDialog.Builder(this)
+                .setTitle("下线通知")
+                .setMessage("您的账号已在其他设备登录。当前设备已下线，您可以继续使用无需登录的功能。")
+                .setPositiveButton("我知道了", null)
+                .setNegativeButton("重新登录") { _, _ ->
+                    startActivity(Intent(this, LoginActivity::class.java))
+                }
+                .setCancelable(false)
+                .show()
         }
     }
 
-    private fun updateTitle(title: String) {
-        binding.tvTitle.text = title
-    }
-
-    /**
-     * 显示迷你播放器
-     */
-    fun showMiniPlayer() {
-        binding.miniPlayer.visibility = View.VISIBLE
-    }
-
-    /**
-     * 隐藏迷你播放器
-     */
-    fun hideMiniPlayer() {
-        binding.miniPlayer.visibility = View.GONE
-    }
-
-    override fun initData() {
-        super.initData()
-        // 观察头像点击跳转认证页
-        binding.cvAvatar.setOnClickListener {
-            startActivity(Intent(this, ClassroomActivity::class.java))
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onEventReceived(event: BaseEvent) {
+        if (event.eventType == EventType.AUTH_TOKEN_EXPIRED) {
+            val isKickedOut = event.eventData == "KICKED_OUT"
+            if (isKickedOut) {
+                if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                    AppFlags.showKickOutDialog = true
+                    onResume()
+                }
+            } else {
+                val intent = Intent(this, LoginActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    putExtra("KICKED_OUT", false)
+                }
+                startActivity(intent)
+                finish()
+            }
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        EventBusManager.unregister(this)
         Log.d(TAG, "MainActivity destroyed")
     }
+}
 
-    /**
-     * ViewPager2 Adapter
-     */
-    private inner class MainViewPagerAdapter(activity: BaseActivity<*, *>) : FragmentStateAdapter(activity) {
+/**
+ * 整个应用的主屏幕 Compose 入口组件
+ */
+@Composable
+fun MainScreen(
+    onAuthClick: () -> Unit,
+    onThemeClick: (ThemeManager.ThemeMode) -> Unit,
+    onFontClick: (FontManager.FontStyle) -> Unit,
+    onLogoutClick: () -> Unit
+) {
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val coroutineScope = rememberCoroutineScope()
+    
+    var isLoggedIn by remember { mutableStateOf(PreferencesManager.isLoggedIn()) }
+    var userName by remember { mutableStateOf(PreferencesManager.getUserName() ?: "同学") }
 
-        override fun getItemCount(): Int = 3
-
-        override fun createFragment(position: Int): Fragment {
-            return when (position) {
-                0 -> HomeFragment()
-                1 -> DiscoverFragment()
-                2 -> LibraryFragment()
-                else -> HomeFragment()
+    var currentTrackTitle by remember { mutableStateOf("苔藓上的私语") }
+    var currentTrackArtist by remember { mutableStateOf("周深处 & 森林合唱团") }
+    var isPlaying by remember { mutableStateOf(true) }
+    
+    DisposableEffect(Unit) {
+        val subscriber = object {
+            @Subscribe(threadMode = ThreadMode.MAIN)
+            fun onEvent(event: BaseEvent) {
+                if (event.eventType == EventType.USER_LOGIN || event.eventType == EventType.USER_LOGOUT) {
+                    isLoggedIn = PreferencesManager.isLoggedIn()
+                    userName = PreferencesManager.getUserName() ?: "同学"
+                }
             }
+        }
+        EventBusManager.register(subscriber)
+        onDispose {
+            EventBusManager.unregister(subscriber)
+        }
+    }
+
+    val navigationState = rememberNavigationState(
+        startRoute = RouteHome,
+        topLevelRoutes = setOf(RouteHome, RouteDiscover, RouteLibrary)
+    )
+    val navigator = remember { Navigator(navigationState) }
+    var currentRoute by remember { mutableStateOf<Any>(RouteHome) }
+
+    val bottomBarHeight = 120.dp
+    val bottomBarHeightPx = with(LocalDensity.current) { bottomBarHeight.roundToPx().toFloat() }
+    val bottomBarOffsetHeightPx = remember { mutableStateOf(0f) }
+
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                val delta = available.y
+                val newOffset = bottomBarOffsetHeightPx.value - delta
+                bottomBarOffsetHeightPx.value = newOffset.coerceIn(0f, bottomBarHeightPx)
+                return Offset.Zero
+            }
+        }
+    }
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet(
+                modifier = Modifier.width(280.dp),
+                drawerContainerColor = MaterialTheme.colorScheme.surface,
+            ) {
+                AppDrawerContent(
+                    isLoggedIn = isLoggedIn,
+                    userName = userName,
+                    onCloseClick = { coroutineScope.launch { drawerState.close() } },
+                    onAuthClick = {
+                        coroutineScope.launch { drawerState.close() }
+                        onAuthClick()
+                    },
+                    onLogoutClick = {
+                        coroutineScope.launch { drawerState.close() }
+                        onLogoutClick()
+                    },
+                    onThemeClick = onThemeClick,
+                    onFontClick = onFontClick
+                )
+            }
+        }
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .nestedScroll(nestedScrollConnection)
+        ) {
+            val entryProvider = entryProvider {
+                entry<RouteHome> {
+                    currentRoute = RouteHome
+                    HomeScreen(
+                        onMenuClick = { coroutineScope.launch { drawerState.open() } },
+                        onAvatarClick = onAuthClick,
+                        onAlbumClick = { id, title ->
+                            currentRoute = RouteAlbumDetail(id, title)
+                            navigator.navigate(RouteAlbumDetail(id, title))
+                        },
+                        onArtistClick = { id, name ->
+                            currentRoute = RouteArtistDetail(id, name)
+                            navigator.navigate(RouteArtistDetail(id, name))
+                        },
+                        onArticleClick = { _ ->
+                            currentRoute = RouteAlbumDetail("vinyl_soul", "回响：寻找消失的黑胶灵魂")
+                            navigator.navigate(RouteAlbumDetail("vinyl_soul", "回响：寻找消失的黑胶灵魂"))
+                        }
+                    )
+                }
+
+                entry<RouteDiscover> {
+                    currentRoute = RouteDiscover
+                    DiscoverScreen(
+                        onMenuClick = { coroutineScope.launch { drawerState.open() } },
+                        onArtistClick = { id, name ->
+                            currentRoute = RouteArtistDetail(id, name)
+                            navigator.navigate(RouteArtistDetail(id, name))
+                        }
+                    )
+                }
+
+                entry<RouteLibrary> {
+                    currentRoute = RouteLibrary
+                    LibraryScreen()
+                }
+
+                entry<RouteArtistDetail> { key ->
+                    currentRoute = key
+                    ArtistDetailScreen(
+                        artistId = key.artistId,
+                        artistName = key.artistName,
+                        onBackClick = { navigator.goBack() },
+                        onAlbumClick = { id, title ->
+                            navigator.navigate(RouteAlbumDetail(id, title))
+                        },
+                        onPlayAllClick = {
+                            currentTrackTitle = "午后的回声"
+                            currentTrackArtist = key.artistName
+                            isPlaying = true
+                        }
+                    )
+                }
+
+                entry<RouteAlbumDetail> { key ->
+                    currentRoute = key
+                    AlbumDetailScreen(
+                        albumId = key.albumId,
+                        albumTitle = key.albumTitle,
+                        onBackClick = { navigator.goBack() },
+                        onTrackClick = { track ->
+                            currentTrackTitle = track.title
+                            currentTrackArtist = "周深处 & 森林合唱团"
+                            isPlaying = true
+                        },
+                        onPlayAllClick = {
+                            currentTrackTitle = "晨露中的第一道光"
+                            currentTrackArtist = "周深处 & 森林合唱团"
+                            isPlaying = true
+                        }
+                    )
+                }
+
+                entry<RouteMusicDetail> { key ->
+                    currentRoute = key
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "🎵 音乐详情 (Navigation 3)\n\n当前歌曲 ID: ${key.songId}",
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                    }
+                }
+            }
+
+            NavDisplay(
+                entries = navigationState.toEntries(entryProvider),
+                onBack = { navigator.goBack() }
+            )
+
+            // 全局悬浮组件区域（Capsule Dock）
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .offset { IntOffset(x = 0, y = bottomBarOffsetHeightPx.value.roundToInt()) }
+                    .padding(bottom = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                // 1. 全局悬浮 Mini 播放器 (暂隐藏，后续定制样式)
+                /*
+                FloatingMiniPlayer(
+                    trackTitle = currentTrackTitle,
+                    artistName = currentTrackArtist,
+                    isPlaying = isPlaying,
+                    onPlayPauseClick = { isPlaying = !isPlaying },
+                    onPlayerClick = {
+                        navigator.navigate(RouteAlbumDetail("playing_album", currentTrackTitle))
+                    }
+                )
+                */
+
+                // 2. 悬浮胶囊 Dock 底栏
+                MainBottomBar(
+                    currentRoute = currentRoute,
+                    onNavigate = { route ->
+                        currentRoute = route
+                        navigator.navigate(route as androidx.navigation3.runtime.NavKey)
+                    }
+                )
+            }
+
         }
     }
 }

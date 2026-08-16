@@ -2,7 +2,6 @@
 .gradle
 /build
 .idea
-*.iml
 local.properties
 .DS_Store
 *.log
@@ -16,19 +15,26 @@ scripts/
 /captures
 .externalNativeBuild
 .cxx
-local.properties
 .nul
 .kotlin
 bin/
 obj/
-.claude/
 status.txt
-temp_fonts/
 nul
 
 # Gradle and Build
 .gradle-user-home/
 .gradle/
 build/
-**/build/
 captures/
+
+# Temporary / Scratch scripts and archives
+*.zip
+*.py
+/test_thumb.png
+cairn/
+.cairn/
+fc/
+nav3/
+nav3ui/
+temp_nav3/

@@ -1,0 +1,50 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!--
+        Orion constellation simplified - just the 4 key stars:
+        Shoulder-left (Betelgeuse): A(5, 6)
+        Shoulder-right (Bellatrix): B(17, 8)
+        Belt center (Alnilam): C(12, 14)
+        Foot (Rigel): D(18, 19)
+        Extra: E(6, 18)
+        Lines: A-B (shoulders), A-C, B-C (to belt), C-D, C-E (legs)
+    -->
+    <path
+        android:strokeColor="#FF000000"
+        android:strokeWidth="1.4"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"
+        android:pathData="
+            M 5 6 L 17 8
+            M 5 6 L 12 14
+            M 17 8 L 12 14
+            M 12 14 L 18 19
+            M 12 14 L 6 19
+        " />
+    <!-- Star nodes -->
+    <path
+        android:strokeColor="#FF000000"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="
+            M 5 6 L 5 6.01
+            M 17 8 L 17 8.01
+            M 12 14 L 12 14.01
+            M 18 19 L 18 19.01
+            M 6 19 L 6 19.01
+        " />
+    <!-- Smaller background stars -->
+    <path
+        android:strokeColor="#FF000000"
+        android:strokeWidth="2.0"
+        android:strokeLineCap="round"
+        android:pathData="
+            M 20 4 L 20 4.01
+            M 3 13 L 3 13.01
+            M 15 3 L 15 3.01
+        " />
+</vector>

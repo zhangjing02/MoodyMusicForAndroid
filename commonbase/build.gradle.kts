@@ -50,14 +50,20 @@ dependencies {
     api(libs.room.runtime)
     api(libs.room.ktx)
 
-    // 图片加载 - Glide
+    // 图片加载 - Glide & Coil
     api(libs.glide)
+    api(libs.coil.compose)
 
     // EventBus - 事件总线
     api(libs.eventbus)
 
-    // RecyclerView - BaseRecyclerViewAdapterHelper
+    // RecyclerView (BaseRecyclerViewAdapterHelper)
     api(libs.base.adapter.helper)
+
+    // UI Widget - BlurView (真机实时动态背景毛玻璃效果)
+    api(libs.blurview)
+
+
 
 
     // ========== Implementation 依赖（仅内部使用） ==========

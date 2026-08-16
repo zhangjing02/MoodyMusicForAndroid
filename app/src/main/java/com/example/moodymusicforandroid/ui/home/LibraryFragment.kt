@@ -1,211 +1,73 @@
 package com.example.moodymusicforandroid.ui.home
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
-import android.view.View
-import androidx.fragment.app.activityViewModels
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import androidx.recyclerview.widget.LinearLayoutManager
-import cn.jpush.android.api.JPushInterface
-import com.example.moodymusicforandroid.R
-import com.example.moodymusicforandroid.base.BaseFragment
-import com.example.moodymusicforandroid.common.preferences.PreferencesManager
-import com.example.moodymusicforandroid.databinding.FragmentLibraryBinding
-import com.example.moodymusicforandroid.common.utils.AppFlags
-import com.example.moodymusicforandroid.receiver.JPushReceiver
-import com.example.moodymusicforandroid.ui.home.adapter.LibraryAdapter
-import com.example.moodymusicforandroid.ui.home.model.LibraryItem
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moodymusicforandroid.ui.home.viewmodel.LibraryViewModel
-import com.example.moodymusicforandroid.ui.music.activity.AlbumSocialAdapter
 import com.example.moodymusicforandroid.ui.music.viewmodel.AlbumSocialViewModel
+import androidx.activity.ComponentActivity
+import androidx.compose.runtime.livedata.observeAsState
+import com.example.moodymusicforandroid.data.model.AlbumSocialContent
+import com.example.moodymusicforandroid.ui.home.components.CommunitySocialSection
+import com.example.moodymusicforandroid.ui.home.components.FavoriteAlbumsSection
+import com.example.moodymusicforandroid.ui.home.components.FollowedArtistsSection
 
-class LibraryFragment : BaseFragment<FragmentLibraryBinding, LibraryViewModel>() {
-
-    private lateinit var libraryAdapter: LibraryAdapter
-    private val socialViewModel: AlbumSocialViewModel by activityViewModels()
-    private var currentAlbumId: String = "night_peace" // 默认演示专辑ID
-
-    // 广播接收器：处理来自 JPushReceiver 的实时刷新信号
-    private val refreshReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            val receivedAlbumId = intent?.getStringExtra(JPushReceiver.EXTRA_ALBUM_ID)
-            if (receivedAlbumId == currentAlbumId) {
-                socialViewModel.fetchSocialContent(currentAlbumId)
-            }
-        }
+/**
+ * 音乐库页面主屏幕组件
+ *
+ * 展示用户的音乐收藏内容和社区社交动态。
+ * 内部已将不同模块抽取为独立的组件，以便于维护。
+ */
+@Composable
+fun LibraryScreen(
+    /** 用于处理音乐库业务逻辑的 ViewModel */
+    viewModel: LibraryViewModel = viewModel(),
+    /** 用于处理社交动态的 ViewModel，作用域为 Activity */
+    socialViewModel: AlbumSocialViewModel = viewModel(viewModelStoreOwner = LocalContext.current as ComponentActivity)
+) {
+    val socialContent by socialViewModel.socialContent.observeAsState()
+    val errorMessage by socialViewModel.errorMessage.observeAsState()
+    var commentText by remember { mutableStateOf("") }
+    
+    // Simulate fetching on mount
+    LaunchedEffect(Unit) {
+        socialViewModel.fetchSocialContent("night_peace")
     }
 
-    override fun getViewModelClass(): Class<LibraryViewModel> = LibraryViewModel::class.java
-
-    override fun getLayoutId(): Int = R.layout.fragment_library
-
-    override fun initView() {
-        super.initView()
-
-        // 1. Setup Main Library RecyclerView (Master Branch logic)
-        libraryAdapter = LibraryAdapter { item, view -> onItemClick(item, view) }
-        binding.recyclerView.adapter = libraryAdapter
-
-        // 2. Setup Social Discussion Section (Social Feature logic)
-        binding.rvReplies.layoutManager = LinearLayoutManager(requireContext())
-        
-        // 重试按钮逻辑
-        binding.btnRetry.setOnClickListener {
-            binding.llRetryArea.visibility = View.GONE
-            socialViewModel.fetchSocialContent(currentAlbumId)
+    LazyColumn(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            FavoriteAlbumsSection()
         }
-
-        // 发送按钮逻辑
-        binding.btnSend.setOnClickListener {
-            val content = binding.etComment.text.toString()
-            if (content.isBlank()) return@setOnClickListener
-            
-            val social = socialViewModel.socialContent.value
-            if (social == null) {
-                socialViewModel.postMainPost(currentAlbumId, content)
-            } else {
-                socialViewModel.postReply(social.id, currentAlbumId, content)
-            }
-            binding.etComment.setText("")
-            binding.etComment.hint = "说点什么..."
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+            FollowedArtistsSection()
         }
-
-        // 观察社交内容变化
-        socialViewModel.socialContent.observe(viewLifecycleOwner) { content ->
-            if (content != null) {
-                binding.llRetryArea.visibility = View.GONE
-                binding.llSocialSection.visibility = View.VISIBLE
-                binding.cardMainPost.visibility = View.VISIBLE
-                binding.tvMainPostContent.text = content.content
-                binding.tvMainPostAuthor.text = "来自: ${content.author.username}"
-                binding.tvMainPostTime.text = content.createdAt
-                
-                binding.rvReplies.adapter = AlbumSocialAdapter(content.replies) { reply ->
-                    binding.etComment.hint = "回复 @${reply.author.username}:"
-                    binding.etComment.requestFocus()
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+            CommunitySocialSection(
+                content = socialContent,
+                errorMessage = errorMessage?.toString(),
+                commentText = commentText,
+                onCommentTextChange = { commentText = it },
+                onRetryClick = { socialViewModel.fetchSocialContent("night_peace") },
+                onSendClick = {
+                    if (commentText.isNotBlank()) {
+                        socialContent?.id?.let {
+                            socialViewModel.postReply(it, "night_peace", commentText)
+                        }
+                        commentText = ""
+                    }
                 }
-            } else {
-                binding.cardMainPost.visibility = View.GONE
-                binding.rvReplies.adapter = null
-            }
-        }
-
-        // 观察错误状态以驱动 Retry UI
-        socialViewModel.errorMessage.observe(viewLifecycleOwner) { errorMsg ->
-            if (!errorMsg.isNullOrEmpty() && socialViewModel.socialContent.value == null) {
-                binding.llRetryArea.visibility = View.VISIBLE
-                binding.tvErrorMessage.text = errorMsg
-            }
-        }
-    }
-
-    override fun initData() {
-        super.initData()
-
-        // Load Library data (Master Branch mock data)
-        val libraryItems = createMockData()
-        libraryAdapter.setItems(libraryItems)
-        
-        // Load Social data
-        socialViewModel.fetchSocialContent(currentAlbumId)
-    }
-
-    private fun createMockData(): List<LibraryItem> {
-        return listOf(
-            // Albums Section
-            LibraryItem.AlbumsHeaderItem(
-                title = "收藏专辑",
-                seeAllText = "查看全部"
-            ),
-            LibraryItem.AlbumFeaturedItem(
-                title = "夜的宁静",
-                artist = "白日梦乐团",
-                imageUrl = null
-            ),
-            LibraryItem.AlbumSmallItem(
-                title = "森林回响",
-                artist = "自然主义者",
-                imageUrl = null
-            ),
-            LibraryItem.AlbumSmallItem(
-                title = "潮汐呼吸",
-                artist = "海浪诗人",
-                imageUrl = null
-            ),
-
-            // Artists Section
-            LibraryItem.ArtistsHeaderItem(
-                title = "关注的艺人"
-            ),
-            LibraryItem.ArtistItem(
-                name = "大提琴鸣响",
-                description = "342k 听众 • 治愈系",
-                imageUrl = null,
-                isFollowing = true
-            ),
-            LibraryItem.ArtistItem(
-                name = "林间风",
-                description = "128k 听众 • 民谣",
-                imageUrl = null,
-                isFollowing = true
-            ),
-            LibraryItem.ArtistItem(
-                name = "空灵笛音",
-                description = "85k 听众 • 冥想",
-                imageUrl = null,
-                isFollowing = true
             )
-        )
-    }
-
-    private fun onItemClick(item: LibraryItem, view: View) {
-        // Handle item click
-        when (item) {
-            is LibraryItem.AlbumFeaturedItem -> {
-                // Navigate to album detail or update social content for this album
-                currentAlbumId = "night_peace"
-                socialViewModel.fetchSocialContent(currentAlbumId)
-            }
-            is LibraryItem.AlbumSmallItem -> {
-                // Navigate to album detail
-            }
-            is LibraryItem.ArtistItem -> {
-                // Navigate to artist detail
-            }
-            else -> {}
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        // 1. 设置全局标记，供 JPushReceiver 判断前台状态
-        AppFlags.isAlbumDetailVisible = true
-        AppFlags.visibleAlbumId = currentAlbumId
-
-        // 2. 消费脏标记
-        if (AppFlags.hasNewComments && AppFlags.pendingRefreshAlbumId == currentAlbumId) {
-            socialViewModel.fetchSocialContent(currentAlbumId)
-            AppFlags.hasNewComments = false
-            AppFlags.pendingRefreshAlbumId = ""
-        }
-
-        // 3. 绑定 JPush Tag
-        val classId = PreferencesManager.getClassId() ?: "default"
-        val tag = "album_${currentAlbumId}_class_${classId}"
-        JPushInterface.setTags(requireContext(), 1, setOf(tag))
-
-        // 4. 注册实时刷新广播
-        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(
-            refreshReceiver, IntentFilter(JPushReceiver.BROADCAST_ACTION_REFRESH_COMMENTS)
-        )
-    }
-
-    override fun onPause() {
-        super.onPause()
-        AppFlags.isAlbumDetailVisible = false
-        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(refreshReceiver)
-        JPushInterface.cleanTags(requireContext(), 2)
     }
 }

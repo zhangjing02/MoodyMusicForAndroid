@@ -6,11 +6,24 @@ import com.example.moodymusicforandroid.common.preferences.PreferencesManager
 import com.example.moodymusicforandroid.common.utils.FontManager
 import com.example.moodymusicforandroid.common.utils.ThemeManager
 
+import android.os.Build
+import coil.ImageLoader
+import coil.ImageLoaderFactory
+
 /**
  * Application 类
  * 用于初始化全局配置和组件
  */
-class MoodyMusicApplication : Application() {
+class MoodyMusicApplication : Application(), ImageLoaderFactory {
+
+    override fun newImageLoader(): ImageLoader {
+        return ImageLoader.Builder(this)
+            // Disable hardware bitmaps on Android 11 and below to prevent
+            // "Software rendering doesn't support hardware bitmaps" crashes when
+            // using BlurView (which uses a software canvas for RenderScript on < API 31)
+            .allowHardware(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+            .build()
+    }
 
     companion object {
         @JvmStatic

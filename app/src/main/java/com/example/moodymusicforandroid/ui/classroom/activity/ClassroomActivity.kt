@@ -1,365 +1,350 @@
 package com.example.moodymusicforandroid.ui.classroom.activity
 
-import android.os.Bundle
-import android.text.InputType
-import android.view.LayoutInflater
-import android.widget.EditText
-import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.moodymusicforandroid.R
-import com.example.moodymusicforandroid.base.BaseActivity
-import com.example.moodymusicforandroid.data.model.RosterItem
-import com.example.moodymusicforandroid.databinding.ActivityClassroomBinding
-import com.example.moodymusicforandroid.ui.classroom.adapter.SeatAdapter
-import com.example.moodymusicforandroid.ui.classroom.viewmodel.ClassroomViewModel
-import com.example.moodymusicforandroid.receiver.JPushReceiver
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.textfield.TextInputLayout
-import cn.jpush.android.api.JPushInterface
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Bundle
+import android.widget.Toast
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import cn.jpush.android.api.JPushInterface
+import com.example.moodymusicforandroid.MoodyMusicApplication
+import com.example.moodymusicforandroid.R
+import com.example.moodymusicforandroid.common.utils.ThemeManager
+import com.example.moodymusicforandroid.data.model.RosterItem
+import com.example.moodymusicforandroid.data.model.SecurityQuestion
+import com.example.moodymusicforandroid.receiver.JPushReceiver
+import com.example.moodymusicforandroid.ui.classroom.viewmodel.ClassroomViewModel
 
-class ClassroomActivity : BaseActivity<ActivityClassroomBinding, ClassroomViewModel>() {
+class ClassroomActivity : AppCompatActivity() {
 
-    private lateinit var adapter: SeatAdapter
-    private val seatColumnCount = 8
-
-    private var claimVerifyDialog: AlertDialog? = null
-    private var claimInputLayouts: List<TextInputLayout> = emptyList()
-    private var claimInputFields: List<EditText> = emptyList()
-
-    private var claimFinalizeDialog: AlertDialog? = null
+    private val viewModel: ClassroomViewModel by viewModels()
     private var currentClassId: Int? = null
 
-    /**
-     * 监听来自 JPushReceiver 的刷新广播
-     */
     private val refreshReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            val classId = intent?.getStringExtra(JPushReceiver.EXTRA_CLASS_ID)
-            android.util.Log.d("ClassroomActivity", "收到刷新广播，classId: $classId")
-            // 只要是在当前教室，就刷新
             viewModel.fetchRoster()
         }
     }
 
-    override fun getViewModelClass() = ClassroomViewModel::class.java
-
-    override fun getLayoutId() = R.layout.activity_classroom
-
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(MoodyMusicApplication.currentThemeResId)
         super.onCreate(savedInstanceState)
-        setupUI()
-        observeViewModel()
-        viewModel.fetchRoster()
+        ThemeManager.initTheme(this)
 
-        // 注册刷新广播接收器
         LocalBroadcastManager.getInstance(this).registerReceiver(
             refreshReceiver,
             IntentFilter(JPushReceiver.BROADCAST_ACTION_REFRESH_ROSTER)
         )
+
+        viewModel.fetchRoster()
+
+        setContent {
+            val classroomData by viewModel.classroomData.observeAsState()
+            val verifyResult by viewModel.verifyResult.observeAsState()
+            val claimResult by viewModel.claimResult.observeAsState()
+            val loginResult by viewModel.loginResult.observeAsState()
+            val errorMsg by viewModel.errorMessage.observeAsState()
+
+            var showLoginDialog by remember { mutableStateOf<RosterItem?>(null) }
+            var showVerifyDialog by remember { mutableStateOf<RosterItem?>(null) }
+            var showFinalizeDialog by remember { mutableStateOf<String?>(null) }
+
+            // Handle Navigation & Side Effects
+            LaunchedEffect(classroomData?.classId) {
+                classroomData?.classId?.let { newId ->
+                    if (currentClassId != newId) {
+                        currentClassId?.let { oldId ->
+                            JPushInterface.deleteTags(this@ClassroomActivity, 101, setOf("classroom_$oldId"))
+                        }
+                        currentClassId = newId
+                        JPushInterface.setTags(this@ClassroomActivity, 102, setOf("classroom_$newId"))
+                    }
+                }
+            }
+
+            LaunchedEffect(verifyResult) {
+                verifyResult?.let {
+                    val claimToken = it.claimToken.trim()
+                    if (claimToken.isBlank()) {
+                        Toast.makeText(this@ClassroomActivity, "验证通过但未拿到 claim token，请重试", Toast.LENGTH_SHORT).show()
+                    } else {
+                        showVerifyDialog = null
+                        showFinalizeDialog = claimToken
+                    }
+                }
+            }
+
+            LaunchedEffect(claimResult) {
+                claimResult?.let {
+                    showFinalizeDialog = null
+                    Toast.makeText(this@ClassroomActivity, "认领成功，${it.username}，欢迎回到教室", Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+            }
+
+            LaunchedEffect(loginResult) {
+                loginResult?.let {
+                    Toast.makeText(this@ClassroomActivity, "登录成功", Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+            }
+
+            LaunchedEffect(errorMsg) {
+                if (!errorMsg.isNullOrEmpty()) {
+                    Toast.makeText(this@ClassroomActivity, errorMsg, Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            MaterialTheme {
+                Scaffold(
+                    topBar = {
+                        @OptIn(ExperimentalMaterial3Api::class)
+                        TopAppBar(
+                            title = { Text("同学录 · 青春到此一游") },
+                            navigationIcon = {
+                                IconButton(onClick = { finish() }) {
+                                    Icon(painterResource(R.drawable.ic_close), contentDescription = "Back")
+                                }
+                            }
+                        )
+                    }
+                ) { padding ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(padding)
+                    ) {
+                        val claimedCount = classroomData?.roster?.count { it.isClaimed == 1 } ?: 0
+                        val totalCount = classroomData?.roster?.size ?: 0
+
+                        // Blackboard Section
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFF2C3E33))
+                                .padding(24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "青春纪念册", // Equivalent to blackboard title
+                                    color = Color.White,
+                                    fontSize = 22.sp
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text(
+                                    text = "快去认领你的专属座位吧...",
+                                    color = Color.White.copy(alpha = 0.7f),
+                                    fontSize = 11.sp
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Row(verticalAlignment = Alignment.Bottom) {
+                                    Text(text = "$claimedCount", color = Color(0xFFFFD700), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                                    Text(text = " 已认领", color = Color(0xFFFFD700), fontSize = 10.sp, modifier = Modifier.padding(start = 4.dp, bottom = 2.dp))
+                                    Spacer(modifier = Modifier.width(16.dp))
+                                    Text(text = "$totalCount", color = Color(0xFFFFD700), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                                    Text(text = " 总座位", color = Color(0xFFFFD700), fontSize = 10.sp, modifier = Modifier.padding(start = 4.dp, bottom = 2.dp))
+                                }
+                            }
+                        }
+
+                        // Wooden Platform
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "这里是老师的讲台，同学们不要乱丢纸团哦",
+                                color = Color.Gray.copy(alpha = 0.52f),
+                                fontSize = 9.sp
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Box(
+                                modifier = Modifier
+                                    .width(120.dp)
+                                    .height(32.dp)
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(Color(0xFFD4A373)), // Wooden color
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "讲 台",
+                                    color = Color(0xFF5C4033),
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Seats Grid
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                                .horizontalScroll(rememberScrollState())
+                        ) {
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(8),
+                                modifier = Modifier
+                                    .width(800.dp) // Match original width for 8 seats to fit nicely
+                                    .padding(horizontal = 12.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                contentPadding = PaddingValues(bottom = 80.dp)
+                            ) {
+                                items(classroomData?.roster ?: emptyList()) { seat ->
+                                    val isClaimed = seat.isClaimed == 1
+                                    com.example.moodymusicforandroid.ui.classroom.components.ClassroomSeat(
+                                        seat = seat,
+                                        onClick = {
+                                            if (isClaimed) showLoginDialog = seat
+                                            else showVerifyDialog = seat
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Dialogs
+                    showLoginDialog?.let { seat ->
+                        var password by remember { mutableStateOf("") }
+                        AlertDialog(
+                            onDismissRequest = { showLoginDialog = null },
+                            title = { Text("${seat.realName}，欢迎回来") },
+                            text = {
+                                OutlinedTextField(
+                                    value = password,
+                                    onValueChange = { password = it },
+                                    label = { Text("请输入密码") },
+                                    visualTransformation = PasswordVisualTransformation()
+                                )
+                            },
+                            confirmButton = {
+                                Button(onClick = {
+                                    if (password.isNotEmpty()) {
+                                        val username = "${seat.yearCode}.${seat.seatCode}${seat.realName}"
+                                        viewModel.login(username, password)
+                                    }
+                                }) { Text("登录") }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showLoginDialog = null }) { Text("取消") }
+                            }
+                        )
+                    }
+
+                    showVerifyDialog?.let { seat ->
+                        val questions = classroomData?.securityQuestions?.take(3) ?: emptyList()
+                        if (questions.size < 3) {
+                            LaunchedEffect(Unit) {
+                                Toast.makeText(this@ClassroomActivity, "请先在后端配置 3 个安全问题", Toast.LENGTH_SHORT).show()
+                                showVerifyDialog = null
+                            }
+                        } else {
+                            var q1 by remember { mutableStateOf("") }
+                            var q2 by remember { mutableStateOf("") }
+                            var q3 by remember { mutableStateOf("") }
+                            
+                            AlertDialog(
+                                onDismissRequest = { showVerifyDialog = null },
+                                title = { Text("认领座位: ${seat.realName}") },
+                                text = {
+                                    Column {
+                                        OutlinedTextField(value = q1, onValueChange = { q1 = it }, label = { Text(questions[0].question) })
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        OutlinedTextField(value = q2, onValueChange = { q2 = it }, label = { Text(questions[1].question) })
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        OutlinedTextField(value = q3, onValueChange = { q3 = it }, label = { Text(questions[2].question) })
+                                    }
+                                },
+                                confirmButton = {
+                                    Button(onClick = {
+                                        if (q1.isBlank() || q2.isBlank() || q3.isBlank()) {
+                                            Toast.makeText(this@ClassroomActivity, "请填写所有答案", Toast.LENGTH_SHORT).show()
+                                        } else {
+                                            viewModel.verifyClaim(seat.id, listOf(q1, q2, q3))
+                                        }
+                                    }) { Text("下一步") }
+                                },
+                                dismissButton = {
+                                    TextButton(onClick = { showVerifyDialog = null }) { Text("取消") }
+                                }
+                            )
+                        }
+                    }
+
+                    showFinalizeDialog?.let { token ->
+                        var password by remember { mutableStateOf("") }
+                        AlertDialog(
+                            onDismissRequest = { showFinalizeDialog = null },
+                            title = { Text("验证通过") },
+                            text = {
+                                Column {
+                                    Text("请设置一个新密码，邮箱可稍后绑定。")
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    OutlinedTextField(
+                                        value = password,
+                                        onValueChange = { password = it },
+                                        label = { Text("新密码") },
+                                        visualTransformation = PasswordVisualTransformation()
+                                    )
+                                }
+                            },
+                            confirmButton = {
+                                Button(onClick = {
+                                    if (password.length >= 6) {
+                                        viewModel.finalizeClaim(token, password)
+                                    } else {
+                                        Toast.makeText(this@ClassroomActivity, "密码至少 6 位", Toast.LENGTH_SHORT).show()
+                                    }
+                                }) { Text("完成认领") }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showFinalizeDialog = null }) { Text("取消") }
+                            }
+                        )
+                    }
+                }
+            }
+        }
     }
 
     override fun onDestroy() {
-        claimVerifyDialog?.dismiss()
-        claimFinalizeDialog?.dismiss()
-        
-        // 取消注册广播
         LocalBroadcastManager.getInstance(this).unregisterReceiver(refreshReceiver)
-        
-        // 取消订阅 JPush Tag
         currentClassId?.let { id ->
-            val tag = "classroom_$id"
-            android.util.Log.d("ClassroomActivity", "退出页面，取消订阅 tag: $tag")
-            JPushInterface.deleteTags(this, 100, setOf(tag))
+            JPushInterface.deleteTags(this, 100, setOf("classroom_$id"))
         }
-
         super.onDestroy()
-    }
-
-    private fun setupUI() {
-        adapter = SeatAdapter(columnCount = seatColumnCount) { seat ->
-            handleSeatClick(seat)
-        }
-
-        binding.rvSeats.layoutManager = GridLayoutManager(
-            this,
-            seatColumnCount,
-            RecyclerView.VERTICAL,
-            false
-        )
-        binding.rvSeats.adapter = adapter
-
-        binding.rvSeats.layoutAnimation = android.view.animation.AnimationUtils.loadLayoutAnimation(
-            this,
-            R.anim.anim_layout_fall_down
-        )
-
-        binding.btnBack.setOnClickListener { finish() }
-    }
-
-    private fun observeViewModel() {
-        viewModel.classroomData.observe(this) { data ->
-            adapter.submitList(data.roster)
-
-            // 处理 JPush Tag 订阅逻辑
-            data.classId?.let { newId ->
-                if (currentClassId != newId) {
-                    // 如果班级变了，先删掉旧的（虽然通常页面内不会变）
-                    currentClassId?.let { oldId ->
-                        JPushInterface.deleteTags(this, 101, setOf("classroom_$oldId"))
-                    }
-                    currentClassId = newId
-                    val tag = "classroom_$newId"
-                    android.util.Log.d("ClassroomActivity", "订阅班级推送 tag: $tag")
-                    JPushInterface.setTags(this, 102, setOf(tag))
-                }
-            }
-
-            binding.tvBlackboardTitle.text = "同学录 · 青春到此一游"
-            binding.tvBlackboardHint.text = "点击你的姓名认领座位"
-
-            val claimedCount = data.roster.count { it.isClaimed == 1 }
-            binding.tvClaimedCount.text = claimedCount.toString()
-            binding.tvTotalCount.text = data.roster.size.toString()
-
-            binding.rvSeats.scheduleLayoutAnimation()
-
-            binding.hsvClassroom.post {
-                val scrollWidth = binding.rvSeats.width
-                val containerWidth = binding.hsvClassroom.width
-                if (scrollWidth > containerWidth) {
-                    binding.hsvClassroom.scrollTo((scrollWidth - containerWidth) / 2, 0)
-                }
-            }
-        }
-
-        viewModel.verifyResult.observe(this) { response ->
-            val claimToken = response.claimToken.trim()
-            if (claimToken.isBlank()) {
-                claimVerifyDialog?.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = true
-                showToast("验证通过但未拿到 claim token，请重试")
-                return@observe
-            }
-            claimVerifyDialog?.dismiss()
-            showClaimFinalizeDialog(claimToken)
-        }
-
-        viewModel.claimResult.observe(this) { user ->
-            claimFinalizeDialog?.dismiss()
-            Toast.makeText(this, "认领成功，${user.username}，欢迎回到教室", Toast.LENGTH_SHORT).show()
-            finish()
-        }
-
-        viewModel.loginResult.observe(this) {
-            Toast.makeText(this, "登录成功", Toast.LENGTH_SHORT).show()
-            finish()
-        }
-    }
-
-    override fun handleError(errorMsg: String) {
-        val handledInVerifyDialog = handleClaimVerifyError(errorMsg)
-        val handledInFinalizeDialog = if (!handledInVerifyDialog) handleClaimFinalizeError(errorMsg) else false
-
-        if (!handledInVerifyDialog && !handledInFinalizeDialog) {
-            showToast(errorMsg)
-        }
-    }
-
-    private fun handleSeatClick(seat: RosterItem) {
-        if (seat.isClaimed == 1) {
-            showLoginDialog(seat)
-        } else {
-            showClaimVerifyDialog(seat)
-        }
-    }
-
-    private fun showLoginDialog(seat: RosterItem) {
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_input_one_field, null)
-        val etInput = dialogView.findViewById<EditText>(R.id.etInput)
-        etInput.hint = "请输入密码"
-        etInput.inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-
-        // 后端存储的 username 格式与认领时生成的一致：${yearCode}.${seatCode}${realName}
-        val username = "${seat.yearCode}.${seat.seatCode}${seat.realName}"
-
-        MaterialAlertDialogBuilder(this)
-            .setTitle("${seat.realName}，欢迎回来")
-            .setView(dialogView)
-            .setPositiveButton("登录") { _, _ ->
-                val password = etInput.text.toString()
-                if (password.isNotEmpty()) {
-                    viewModel.login(username, password)
-                }
-            }
-            .setNegativeButton("取消", null)
-            .show()
-    }
-
-    private fun showClaimVerifyDialog(seat: RosterItem) {
-        val questions = viewModel.classroomData.value?.securityQuestions?.take(3) ?: emptyList()
-        if (questions.size < 3) {
-            Toast.makeText(this, "请先在后端配置 3 个安全问题", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_input_three_fields, null)
-        val etField1 = dialogView.findViewById<EditText>(R.id.etField1)
-        val etField2 = dialogView.findViewById<EditText>(R.id.etField2)
-        val etField3 = dialogView.findViewById<EditText>(R.id.etField3)
-
-        val tilField1 = dialogView.findViewById<TextInputLayout>(R.id.tilField1)
-        val tilField2 = dialogView.findViewById<TextInputLayout>(R.id.tilField2)
-        val tilField3 = dialogView.findViewById<TextInputLayout>(R.id.tilField3)
-
-        etField1.hint = questions[0].question
-        etField2.hint = questions[1].question
-        etField3.hint = questions[2].question
-
-        claimInputLayouts = listOf(tilField1, tilField2, tilField3)
-        claimInputFields = listOf(etField1, etField2, etField3)
-        clearClaimFieldErrors()
-
-        val dialog = MaterialAlertDialogBuilder(this)
-            .setTitle("认领座位: ${seat.realName}")
-            .setView(dialogView)
-            .setPositiveButton("下一步", null)
-            .setNegativeButton("取消", null)
-            .create()
-
-        dialog.setOnShowListener {
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                clearClaimFieldErrors()
-
-                val answers = listOf(
-                    etField1.text?.toString()?.trim().orEmpty(),
-                    etField2.text?.toString()?.trim().orEmpty(),
-                    etField3.text?.toString()?.trim().orEmpty()
-                )
-
-                val firstEmptyIndex = answers.indexOfFirst { it.isEmpty() }
-                if (firstEmptyIndex >= 0) {
-                    markClaimFieldError(firstEmptyIndex, "请填写该题答案")
-                    return@setOnClickListener
-                }
-
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
-                viewModel.verifyClaim(seat.id, answers)
-            }
-        }
-
-        dialog.setOnDismissListener {
-            clearClaimVerifyDialogState()
-        }
-
-        claimVerifyDialog = dialog
-        dialog.show()
-    }
-
-    private fun handleClaimVerifyError(message: String): Boolean {
-        val dialog = claimVerifyDialog ?: return false
-        if (!dialog.isShowing || claimInputLayouts.isEmpty()) {
-            return false
-        }
-
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = true
-
-        val wrongAnswerIndex = Regex("""第\s*(\d+)\s*道问题答案不正确""")
-            .find(message)
-            ?.groupValues
-            ?.getOrNull(1)
-            ?.toIntOrNull()
-            ?.minus(1)
-
-        if (wrongAnswerIndex != null && wrongAnswerIndex in claimInputLayouts.indices) {
-            markClaimFieldError(wrongAnswerIndex, message)
-            return true
-        }
-
-        if (message.contains("答案不正确")) {
-            claimInputLayouts.forEach { it.error = "答案不正确，请重新填写" }
-            claimInputFields.firstOrNull()?.requestFocus()
-            return true
-        }
-
-        return false
-    }
-
-    private fun clearClaimFieldErrors() {
-        claimInputLayouts.forEach { it.error = null }
-    }
-
-    private fun markClaimFieldError(index: Int, errorMessage: String) {
-        val targetLayout = claimInputLayouts.getOrNull(index) ?: return
-        val targetField = claimInputFields.getOrNull(index)
-
-        targetLayout.error = errorMessage
-        targetField?.requestFocus()
-        targetField?.setSelection(targetField.text?.length ?: 0)
-    }
-
-    private fun clearClaimVerifyDialogState() {
-        claimVerifyDialog = null
-        claimInputLayouts = emptyList()
-        claimInputFields = emptyList()
-    }
-
-    private fun showClaimFinalizeDialog(claimToken: String) {
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_input_one_field, null)
-        val etPassword = dialogView.findViewById<EditText>(R.id.etInput)
-        etPassword.hint = "设置你的新密码"
-        etPassword.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-
-        val dialog = MaterialAlertDialogBuilder(this)
-            .setTitle("验证通过")
-            .setMessage("请设置一个新密码，邮箱可稍后绑定。")
-            .setView(dialogView)
-            .setPositiveButton("完成认领", null)
-            .setNegativeButton("取消", null)
-            .setCancelable(false)
-            .create()
-
-        dialog.setOnShowListener {
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                val password = etPassword.text?.toString()?.trim().orEmpty()
-                if (password.isBlank()) {
-                    showToast("密码不能为空")
-                    return@setOnClickListener
-                }
-                if (password.length < 6) {
-                    showToast("密码至少 6 位")
-                    return@setOnClickListener
-                }
-
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
-                viewModel.finalizeClaim(claimToken, password)
-            }
-        }
-
-        dialog.setOnDismissListener {
-            clearFinalizeDialogState()
-        }
-
-        claimFinalizeDialog = dialog
-        dialog.show()
-    }
-
-    private fun handleClaimFinalizeError(message: String): Boolean {
-        val dialog = claimFinalizeDialog ?: return false
-        if (!dialog.isShowing) {
-            return false
-        }
-
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = true
-        return false
-    }
-
-    private fun clearFinalizeDialogState() {
-        claimFinalizeDialog = null
     }
 }
