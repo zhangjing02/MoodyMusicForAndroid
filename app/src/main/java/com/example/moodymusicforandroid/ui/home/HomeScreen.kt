@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -27,6 +28,10 @@ import com.example.moodymusicforandroid.ui.home.components.*
 import com.example.moodymusicforandroid.ui.home.viewmodel.HomeViewModel
 import com.example.moodymusicforandroid.ui.theme.SongbookColors
 
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+
 /**
  * 现代颂歌 (The Modern Songbook) 首页
  *
@@ -42,6 +47,7 @@ import com.example.moodymusicforandroid.ui.theme.SongbookColors
  * 8. archive_card -> ArchiveCardBlock (时代留声机/典藏黑胶)
  * 9. essay_card -> EssaysSection (文艺选集随笔)
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
@@ -53,128 +59,215 @@ fun HomeScreen(
     onArticleClick: (String) -> Unit = {}
 ) {
     val feedItems by viewModel.homeFeedItems.collectAsState()
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val pullToRefreshState = rememberPullToRefreshState()
+    val listState = rememberLazyListState()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
-    LazyColumn(
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = { viewModel.fetchHomeFeed() },
+        state = pullToRefreshState,
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(horizontal = 20.dp),
-        contentPadding = PaddingValues(top = 16.dp, bottom = 140.dp) // 预留底部浮动 MiniPlayer 和 Dock 空间
+            .background(MaterialTheme.colorScheme.background),
+        indicator = {
+            Indicator(
+                state = pullToRefreshState,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = statusBarTop + 6.dp),
+                isRefreshing = isRefreshing,
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                color = SongbookColors.BurntOrange
+            )
+        }
     ) {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp),
+            contentPadding = PaddingValues(
+                top = statusBarTop + 6.dp,
+                bottom = 140.dp
+            )
+        ) {
         // 1. 杂志固定刊头栏 (Society Weekly Top Bar)
         item(key = "society_weekly_top_bar") {
             SocietyWeeklyTopBar(
                 onMenuClick = onMenuClick,
                 onAvatarClick = onAvatarClick
             )
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(14.dp))
         }
 
-        // 2. 动态切片流 (Block-Based SDUI Items)
-        items(feedItems, key = { it.id }) { block ->
+        // 2. 动态切片流 (Block-Based SDUI Items) - 细粒度分帧解构
+        feedItems.forEach { block ->
             when (block.type) {
                 HomeBlockType.HERO_BANNER -> {
-                    val hero = block.toHeroBanner()
-                    HeroFeaturedCard(
-                        title = hero.title,
-                        tag = hero.tag,
-                        summary = hero.summary,
-                        imageUrl = hero.imageUrl,
-                        primaryActionText = hero.primaryActionText,
-                        secondaryActionText = hero.secondaryActionText,
-                        onReadArticleClick = { onArticleClick(hero.articleId) },
-                        onPlayAlbumClick = { onAlbumClick(hero.albumId, hero.albumTitle) }
-                    )
-                    Spacer(modifier = Modifier.height(28.dp))
+                    item(key = block.id, contentType = block.type) {
+                        val hero = block.parsedData as? HeroBannerData ?: block.toHeroBanner()
+                        HeroFeaturedCard(
+                            title = hero.title,
+                            tag = hero.tag,
+                            summary = hero.summary,
+                            imageUrl = hero.imageUrl,
+                            primaryActionText = hero.primaryActionText,
+                            secondaryActionText = hero.secondaryActionText,
+                            onReadArticleClick = { onArticleClick(hero.articleId) },
+                            onPlayAlbumClick = { onAlbumClick(hero.albumId, hero.albumTitle) }
+                        )
+                        Spacer(modifier = Modifier.height(28.dp))
+                    }
                 }
 
                 HomeBlockType.CATEGORY_TABS -> {
-                    val tabsData = block.toCategoryTabs()
-                    CategoryTabsBlock(
-                        data = tabsData,
-                        onTabSelect = { categoryId -> viewModel.selectCategory(categoryId) }
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
+                    item(key = block.id, contentType = block.type) {
+                        val tabsData = block.parsedData as? CategoryTabsData ?: block.toCategoryTabs()
+                        CategoryTabsBlock(
+                            data = tabsData,
+                            onTabSelect = { categoryId -> viewModel.selectCategory(categoryId) }
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                    }
                 }
 
                 HomeBlockType.SECTION_TITLE -> {
-                    val titleData = block.toSectionTitle()
-                    SectionTitleBlock(
-                        data = titleData,
-                        onActionClick = { route ->
-                            when (route) {
-                                "all_artists" -> onArtistClick("all", "精选艺术家")
-                                "play_all_tracks" -> onAlbumClick("daily_tracks", "今日单曲集")
-                                "archive_gallery" -> onAlbumClick("archive_gallery", "时代留声机")
-                                else -> onAlbumClick("society_weekly", "SOCIETY WEEKLY")
+                    item(key = block.id, contentType = block.type) {
+                        val titleData = block.parsedData as? SectionTitleData ?: block.toSectionTitle()
+                        SectionTitleBlock(
+                            data = titleData,
+                            onActionClick = { route ->
+                                when (route) {
+                                    "all_artists" -> onArtistClick("all", "精选艺术家")
+                                    "play_all_tracks" -> onAlbumClick("daily_tracks", "今日单曲集")
+                                    "archive_gallery" -> onAlbumClick("archive_gallery", "时代留声机")
+                                    else -> onAlbumClick("society_weekly", "SOCIETY WEEKLY")
+                                }
                             }
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(18.dp))
-                }
-
-                HomeBlockType.ESSAY_CARD -> {
-                    val essayData = block.toEssayCard()
-                    EssaysSection(
-                        title = essayData.title,
-                        essays = essayData.essays,
-                        onArticleClick = onArticleClick
-                    )
-                    Spacer(modifier = Modifier.height(28.dp))
+                        )
+                        Spacer(modifier = Modifier.height(18.dp))
+                    }
                 }
 
                 HomeBlockType.ARTIST_GRID -> {
-                    val artistData = block.toArtistGrid()
-                    ArtistGridBlock(
-                        data = artistData,
-                        onArtistClick = onArtistClick
-                    )
-                    Spacer(modifier = Modifier.height(28.dp))
+                    val artistData = block.parsedData as? ArtistGridData ?: block.toArtistGrid()
+                    for (i in artistData.artists.indices step 2) {
+                        val left = artistData.artists[i]
+                        val right = artistData.artists.getOrNull(i + 1)
+                        item(key = "artist_pair_${left.id}_${right?.id ?: ""}", contentType = "artist_row") {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                ArtistGridCard(
+                                    artist = left,
+                                    modifier = Modifier.weight(1f),
+                                    onClick = { onArtistClick(left.id, left.name) }
+                                )
+                                if (right != null) {
+                                    ArtistGridCard(
+                                        artist = right,
+                                        modifier = Modifier.weight(1f),
+                                        onClick = { onArtistClick(right.id, right.name) }
+                                    )
+                                } else {
+                                    Spacer(modifier = Modifier.weight(1f))
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(10.dp))
+                        }
+                    }
+                    item(key = "artist_bottom_space_${block.id}") {
+                        Spacer(modifier = Modifier.height(18.dp))
+                    }
                 }
 
                 HomeBlockType.TRACK_LIST -> {
-                    val trackData = block.toTrackList()
-                    TrackListBlock(
-                        data = trackData,
-                        onTrackClick = { track -> onAlbumClick(track.id, track.title) },
-                        onPlayToggle = { trackId -> viewModel.toggleTrackPlay(trackId) }
-                    )
-                    Spacer(modifier = Modifier.height(28.dp))
+                    val trackData = block.parsedData as? TrackListData ?: block.toTrackList()
+                    items(
+                        items = trackData.tracks,
+                        key = { "track_${it.id}" },
+                        contentType = { "track_item" }
+                    ) { track ->
+                        val index = trackData.tracks.indexOf(track) + 1
+                        TrackListItemCard(
+                            index = index,
+                            track = track,
+                            onClick = { onAlbumClick(track.id, track.title) },
+                            onPlayToggle = { viewModel.toggleTrackPlay(track.id) }
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+                    item(key = "track_bottom_space_${block.id}") {
+                        Spacer(modifier = Modifier.height(18.dp))
+                    }
                 }
 
                 HomeBlockType.ARCHIVE_CARD -> {
-                    val archiveData = block.toArchiveCard()
-                    ArchiveCardBlock(
-                        data = archiveData,
-                        onClick = { onAlbumClick(archiveData.id, archiveData.title) }
-                    )
-                    Spacer(modifier = Modifier.height(28.dp))
+                    item(key = block.id, contentType = block.type) {
+                        val archiveData = block.parsedData as? ArchiveCardData ?: block.toArchiveCard()
+                        ArchiveCardBlock(
+                            data = archiveData,
+                            onClick = { onAlbumClick(archiveData.id, archiveData.title) }
+                        )
+                        Spacer(modifier = Modifier.height(28.dp))
+                    }
                 }
 
                 HomeBlockType.IMAGE_FEATURE -> {
-                    val imageData = block.toImageFeature()
-                    ImageFeatureBlock(
-                        data = imageData,
-                        onClick = { onArticleClick("visual_feature") }
-                    )
-                    Spacer(modifier = Modifier.height(28.dp))
+                    item(key = block.id, contentType = block.type) {
+                        val imageData = block.parsedData as? ImageFeatureData ?: block.toImageFeature()
+                        ImageFeatureBlock(
+                            data = imageData,
+                            onClick = { onArticleClick("visual_feature") }
+                        )
+                        Spacer(modifier = Modifier.height(28.dp))
+                    }
+                }
+
+                HomeBlockType.ESSAY_CARD -> {
+                    val essayData = block.parsedData as? EssayCardData ?: block.toEssayCard()
+                    item(key = "essay_header_${block.id}", contentType = "essay_header") {
+                        Text(
+                            text = essayData.title,
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 20.dp)
+                        )
+                    }
+                    items(
+                        items = essayData.essays,
+                        key = { "essay_${it.id}" },
+                        contentType = { "essay_item" }
+                    ) { essay ->
+                        EssayItem(
+                            essay = essay,
+                            onClick = { onArticleClick(essay.id) }
+                        )
+                        Spacer(modifier = Modifier.height(28.dp))
+                    }
                 }
 
                 HomeBlockType.QUICK_ACTIONS -> {
-                    val actionsData = block.toQuickActions()
-                    QuickActionsBlock(
-                        data = actionsData,
-                        onActionClick = { action ->
-                            when (action.id) {
-                                "classroom" -> onAlbumClick("classroom", "音乐教室")
-                                "vinyl_radio" -> onAlbumClick("vinyl_radio", "黑胶电台")
-                                "daily_radar" -> onAlbumClick("daily_radar", "每日随心听")
-                                "new_charts" -> onAlbumClick("new_charts", "新碟排行榜")
-                                else -> onAlbumClick(action.id, action.title)
+                    item(key = block.id, contentType = block.type) {
+                        val actionsData = block.parsedData as? QuickActionsData ?: block.toQuickActions()
+                        QuickActionsBlock(
+                            data = actionsData,
+                            onActionClick = { action ->
+                                when (action.id) {
+                                    "classroom" -> onAlbumClick("classroom", "音乐教室")
+                                    "vinyl_radio" -> onAlbumClick("vinyl_radio", "黑胶电台")
+                                    "daily_radar" -> onAlbumClick("daily_radar", "每日随心听")
+                                    "new_charts" -> onAlbumClick("new_charts", "新碟排行榜")
+                                    else -> onAlbumClick(action.id, action.title)
+                                }
                             }
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(28.dp))
+                        )
+                        Spacer(modifier = Modifier.height(28.dp))
+                    }
                 }
 
                 else -> {
@@ -183,6 +276,7 @@ fun HomeScreen(
             }
         }
     }
+}
 }
 
 /**
@@ -196,7 +290,7 @@ private fun SocietyWeeklyTopBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(top = 2.dp, bottom = 6.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {

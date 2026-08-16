@@ -30,6 +30,7 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -86,10 +87,11 @@ dependencies {
     implementation(libs.androidx.material)
     implementation(libs.androidx.constraintlayout)
 
-    // UI Widget Helper - BlurView
+    // UI Widget Helper - BlurView & Haze (Compose Frosted Glass)
     implementation(libs.blurview)
     implementation(libs.rwidget.helper)
-
+    implementation(libs.haze)
+    implementation(libs.haze.materials)
 
     // JPush
     implementation(libs.jpush)

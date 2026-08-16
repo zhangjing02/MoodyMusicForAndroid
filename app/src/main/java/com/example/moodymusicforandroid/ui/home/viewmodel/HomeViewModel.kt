@@ -44,7 +44,7 @@ class HomeViewModel : BaseViewModel() {
                 if (response.isSuccessful && response.body() != null) {
                     val feed = response.body()!!
                     if (feed.items.isNotEmpty()) {
-                        _homeFeedItems.value = feed.items
+                        _homeFeedItems.value = preParseItems(feed.items)
                         _isRefreshing.value = false
                         return@launch
                     }
@@ -55,7 +55,7 @@ class HomeViewModel : BaseViewModel() {
                 if (moodyResponse.code == 200 && moodyResponse.data != null) {
                     val feed = moodyResponse.data!!
                     if (feed.items.isNotEmpty()) {
-                        _homeFeedItems.value = feed.items
+                        _homeFeedItems.value = preParseItems(feed.items)
                         _isRefreshing.value = false
                         return@launch
                     }
@@ -66,6 +66,25 @@ class HomeViewModel : BaseViewModel() {
             } finally {
                 _isRefreshing.value = false
             }
+        }
+    }
+
+    private fun preParseItems(items: List<HomeBlockItem>): List<HomeBlockItem> {
+        return items.map { block ->
+            if (block.parsedData != null) return@map block
+            val parsed = when (block.type) {
+                HomeBlockType.HERO_BANNER -> block.toHeroBanner()
+                HomeBlockType.CATEGORY_TABS -> block.toCategoryTabs()
+                HomeBlockType.SECTION_TITLE -> block.toSectionTitle()
+                HomeBlockType.ESSAY_CARD -> block.toEssayCard()
+                HomeBlockType.ARTIST_GRID -> block.toArtistGrid()
+                HomeBlockType.TRACK_LIST -> block.toTrackList()
+                HomeBlockType.ARCHIVE_CARD -> block.toArchiveCard()
+                HomeBlockType.IMAGE_FEATURE -> block.toImageFeature()
+                HomeBlockType.QUICK_ACTIONS -> block.toQuickActions()
+                else -> null
+            }
+            if (parsed != null) block.copy(parsedData = parsed) else block
         }
     }
 

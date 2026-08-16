@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MoodyMusicForAndroid</string>
+    <string name="app_name">音信</string>
+    <string name="app_name_en">TunePost</string>
     <string name="unknown_album">Unknown Album</string>
     <string name="classroom_auth">教室认证</string>
     <string name="seat_claim">认领座位</string>

@@ -29,6 +29,10 @@ import com.example.moodymusicforandroid.ui.home.viewmodel.DiscoverViewModel
 import com.example.moodymusicforandroid.ui.theme.SongbookColors
 import kotlinx.coroutines.launch
 
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+
 /**
  * 发现 / 档案名录屏幕 (Discover / A-Z Archive)
  *
@@ -37,6 +41,7 @@ import kotlinx.coroutines.launch
  * 2. 杂志风大标题「档案名录」与 A-Z Archive 英文副标
  * 3. 艺术家列表与首字母快速定位导航
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiscoverScreen(
     modifier: Modifier = Modifier,
@@ -45,6 +50,8 @@ fun DiscoverScreen(
     onArtistClick: (String, String) -> Unit = { _, _ -> }
 ) {
     val artistsFromVm by viewModel.artists.observeAsState(emptyList())
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val pullToRefreshState = rememberPullToRefreshState()
     val coroutineScope = rememberCoroutineScope()
     val listState = rememberLazyListState()
 
@@ -95,8 +102,8 @@ fun DiscoverScreen(
             fallbackRes = R.drawable.artist_charlie
         ),
         DirectoryArtist(
-            id = "li_jian",
-            name = "李健",
+            id = "hero_acoustic",
+            name = "林间碎影",
             initial = "L",
             genre = "民谣",
             albumCount = 9,
@@ -163,18 +170,40 @@ fun DiscoverScreen(
     val groupedArtists = filteredArtists.groupBy { it.initial }.toSortedMap()
     val alphabetList = listOf("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z")
 
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        LazyColumn(
-            state = listState,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 20.dp),
-            contentPadding = PaddingValues(top = 16.dp, bottom = 140.dp)
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = { viewModel.fetchArtists() },
+            state = pullToRefreshState,
+            modifier = Modifier.fillMaxSize(),
+            indicator = {
+                Indicator(
+                    state = pullToRefreshState,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = statusBarTop + 6.dp),
+                    isRefreshing = isRefreshing,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    color = SongbookColors.BurntOrange
+                )
+            }
         ) {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 20.dp),
+                contentPadding = PaddingValues(
+                    top = statusBarTop + 6.dp,
+                    bottom = 140.dp
+                )
+            ) {
             // 1. TopBar
             item {
                 Row(
@@ -335,6 +364,7 @@ fun DiscoverScreen(
                 }
             }
         }
+    }
 
         // 6. 右侧快捷字母导航索引栏
         Column(

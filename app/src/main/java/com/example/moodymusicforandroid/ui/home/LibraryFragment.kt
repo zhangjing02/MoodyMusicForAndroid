@@ -1,22 +1,26 @@
 package com.example.moodymusicforandroid.ui.home
 
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.moodymusicforandroid.ui.home.viewmodel.LibraryViewModel
-import com.example.moodymusicforandroid.ui.music.viewmodel.AlbumSocialViewModel
-import androidx.activity.ComponentActivity
-import androidx.compose.runtime.livedata.observeAsState
-import com.example.moodymusicforandroid.data.model.AlbumSocialContent
 import com.example.moodymusicforandroid.ui.home.components.CommunitySocialSection
 import com.example.moodymusicforandroid.ui.home.components.FavoriteAlbumsSection
 import com.example.moodymusicforandroid.ui.home.components.FollowedArtistsSection
+import com.example.moodymusicforandroid.ui.home.viewmodel.LibraryViewModel
+import com.example.moodymusicforandroid.ui.music.viewmodel.AlbumSocialViewModel
+import com.example.moodymusicforandroid.ui.theme.SongbookColors
+
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 
 /**
  * 音乐库页面主屏幕组件
@@ -24,6 +28,7 @@ import com.example.moodymusicforandroid.ui.home.components.FollowedArtistsSectio
  * 展示用户的音乐收藏内容和社区社交动态。
  * 内部已将不同模块抽取为独立的组件，以便于维护。
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryScreen(
     /** 用于处理音乐库业务逻辑的 ViewModel */
@@ -33,6 +38,8 @@ fun LibraryScreen(
 ) {
     val socialContent by socialViewModel.socialContent.observeAsState()
     val errorMessage by socialViewModel.errorMessage.observeAsState()
+    val isRefreshing by socialViewModel.isRefreshing.collectAsState()
+    val pullToRefreshState = rememberPullToRefreshState()
     var commentText by remember { mutableStateOf("") }
     
     // Simulate fetching on mount
@@ -40,34 +47,58 @@ fun LibraryScreen(
         socialViewModel.fetchSocialContent("night_peace")
     }
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            FavoriteAlbumsSection()
-        }
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
-            FollowedArtistsSection()
-        }
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
-            CommunitySocialSection(
-                content = socialContent,
-                errorMessage = errorMessage?.toString(),
-                commentText = commentText,
-                onCommentTextChange = { commentText = it },
-                onRetryClick = { socialViewModel.fetchSocialContent("night_peace") },
-                onSendClick = {
-                    if (commentText.isNotBlank()) {
-                        socialContent?.id?.let {
-                            socialViewModel.postReply(it, "night_peace", commentText)
-                        }
-                        commentText = ""
-                    }
-                }
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = { socialViewModel.fetchSocialContent("night_peace") },
+        state = pullToRefreshState,
+        modifier = Modifier.fillMaxSize(),
+        indicator = {
+            Indicator(
+                state = pullToRefreshState,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = statusBarTop + 6.dp),
+                isRefreshing = isRefreshing,
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                color = SongbookColors.BurntOrange
             )
+        }
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+            contentPadding = PaddingValues(
+                top = statusBarTop + 6.dp,
+                bottom = 140.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                FavoriteAlbumsSection()
+            }
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                FollowedArtistsSection()
+            }
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                CommunitySocialSection(
+                    content = socialContent,
+                    errorMessage = errorMessage?.toString(),
+                    commentText = commentText,
+                    onCommentTextChange = { commentText = it },
+                    onRetryClick = { socialViewModel.fetchSocialContent("night_peace") },
+                    onSendClick = {
+                        if (commentText.isNotBlank()) {
+                            socialContent?.id?.let {
+                                socialViewModel.postReply(it, "night_peace", commentText)
+                            }
+                            commentText = ""
+                        }
+                    }
+                )
+            }
         }
     }
 }

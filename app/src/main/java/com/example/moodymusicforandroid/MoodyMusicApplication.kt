@@ -9,6 +9,9 @@ import com.example.moodymusicforandroid.common.utils.ThemeManager
 import android.os.Build
 import coil.ImageLoader
 import coil.ImageLoaderFactory
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * Application 类
@@ -18,10 +21,19 @@ class MoodyMusicApplication : Application(), ImageLoaderFactory {
 
     override fun newImageLoader(): ImageLoader {
         return ImageLoader.Builder(this)
-            // Disable hardware bitmaps on Android 11 and below to prevent
-            // "Software rendering doesn't support hardware bitmaps" crashes when
-            // using BlurView (which uses a software canvas for RenderScript on < API 31)
-            .allowHardware(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+            .crossfade(false)
+            .allowHardware(true)
+            .memoryCache {
+                coil.memory.MemoryCache.Builder(this)
+                    .maxSizePercent(0.25)
+                    .build()
+            }
+            .diskCache {
+                coil.disk.DiskCache.Builder()
+                    .directory(cacheDir.resolve("image_cache"))
+                    .maxSizeBytes(80L * 1024 * 1024)
+                    .build()
+            }
             .build()
     }
 
@@ -43,16 +55,21 @@ class MoodyMusicApplication : Application(), ImageLoaderFactory {
         // 应用组合主题（字体 + 颜色）
         applyCombinedTheme()
 
-        // TODO: 后续可以在这里初始化其他组件，例如：
-        // - Room Database
-        // - 第三方 SDK
-        // - LeakCanary（调试时）
-        // - 友盟统计
-        // - Bugly
+        // 异步预热 60MB 本地字体库与后台服务，彻底避免首次滑入列表时在 UI 主线程耗时 60~80ms 同步解析字体
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+            try {
+                androidx.core.content.res.ResourcesCompat.getFont(this@MoodyMusicApplication, R.font.source_han_serif_sc_regular)
+                androidx.core.content.res.ResourcesCompat.getFont(this@MoodyMusicApplication, R.font.source_han_serif_sc_bold)
+                androidx.core.content.res.ResourcesCompat.getFont(this@MoodyMusicApplication, R.font.source_han_sans_sc_regular)
+                androidx.core.content.res.ResourcesCompat.getFont(this@MoodyMusicApplication, R.font.source_han_sans_sc_bold)
+                androidx.core.content.res.ResourcesCompat.getFont(this@MoodyMusicApplication, R.font.lxgw_wenkai_gb_regular)
+            } catch (_: Exception) {}
 
-        // 初始化极光推送
-        cn.jpush.android.api.JPushInterface.setDebugMode(true)
-        cn.jpush.android.api.JPushInterface.init(this)
+            try {
+                cn.jpush.android.api.JPushInterface.setDebugMode(false)
+                cn.jpush.android.api.JPushInterface.init(this@MoodyMusicApplication)
+            } catch (_: Exception) {}
+        }
     }
 
     /**

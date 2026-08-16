@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -50,6 +51,14 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import kotlin.math.roundToInt
 
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.view.FrameMetrics
+import android.view.Window
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeSource
+
 /**
  * 应用的主 Activity，承担单 Activity 架构的宿主角色。
  */
@@ -65,6 +74,7 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         EventBusManager.register(this)
         ThemeManager.initTheme(this)
+        setupJankMonitor()
 
         setContent {
             val owner = this@MainActivity as androidx.navigationevent.NavigationEventDispatcherOwner
@@ -111,6 +121,46 @@ class MainActivity : AppCompatActivity() {
                 }
                 .setCancelable(false)
                 .show()
+        }
+    }
+
+    private fun setupJankMonitor() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            val refreshRate = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                display?.refreshRate ?: 60f
+            } else {
+                @Suppress("DEPRECATION")
+                windowManager.defaultDisplay.refreshRate
+            }
+            val frameDeadlineMs = 1000f / refreshRate
+            val jankThresholdMs = frameDeadlineMs * 1.5f
+
+            // 使用独立后台线程处理掉帧监控日志，彻底避免监控代码本身在主线程进行字符串格式化和 Logcat IPC 引起掉帧
+            val monitorThread = android.os.HandlerThread("JankMonitorThread").apply { start() }
+            val handler = Handler(monitorThread.looper)
+            window.addOnFrameMetricsAvailableListener(
+                Window.OnFrameMetricsAvailableListener { _, frameMetrics, _ ->
+                    val totalDurationNs = frameMetrics.getMetric(FrameMetrics.TOTAL_DURATION)
+                    val durationMs = totalDurationNs / 1_000_000f
+                    val layoutDurationMs = frameMetrics.getMetric(FrameMetrics.LAYOUT_MEASURE_DURATION) / 1_000_000f
+                    val drawDurationMs = frameMetrics.getMetric(FrameMetrics.DRAW_DURATION) / 1_000_000f
+                    val syncDurationMs = frameMetrics.getMetric(FrameMetrics.SYNC_DURATION) / 1_000_000f
+                    val commandIssueMs = frameMetrics.getMetric(FrameMetrics.COMMAND_ISSUE_DURATION) / 1_000_000f
+                    val swapBuffersMs = frameMetrics.getMetric(FrameMetrics.SWAP_BUFFERS_DURATION) / 1_000_000f
+                    val animDurationMs = frameMetrics.getMetric(FrameMetrics.ANIMATION_DURATION) / 1_000_000f
+                    val inputDurationMs = frameMetrics.getMetric(FrameMetrics.INPUT_HANDLING_DURATION) / 1_000_000f
+                    val gpuDurationMs = frameMetrics.getMetric(FrameMetrics.GPU_DURATION) / 1_000_000f
+
+                    if (durationMs > jankThresholdMs) {
+                        Log.w(
+                            "JankMonitor",
+                            "⚠️ [掉帧] 总耗时:${"%.1f".format(durationMs)}ms (基准:${"%.1f".format(frameDeadlineMs)}ms) | 排版:${"%.1f".format(layoutDurationMs)}ms | 绘制:${"%.1f".format(drawDurationMs)}ms | 同步(Sync):${"%.1f".format(syncDurationMs)}ms | 交换缓冲(Swap):${"%.1f".format(swapBuffersMs)}ms | 指令(Cmd):${"%.1f".format(commandIssueMs)}ms | 动画:${"%.1f".format(animDurationMs)}ms | 输入:${"%.1f".format(inputDurationMs)}ms | GPU:${"%.1f".format(gpuDurationMs)}ms"
+                        )
+                    }
+                },
+                handler
+            )
+            Log.i("JankMonitor", "🚀 [JankMonitor] 掉帧监控器已启动(后台线程监听)，当前屏幕刷新率: ${refreshRate.toInt()}Hz，单帧预算: ${"%.1f".format(frameDeadlineMs)}ms")
         }
     }
 
@@ -182,22 +232,6 @@ fun MainScreen(
         topLevelRoutes = setOf(RouteHome, RouteDiscover, RouteLibrary)
     )
     val navigator = remember { Navigator(navigationState) }
-    var currentRoute by remember { mutableStateOf<Any>(RouteHome) }
-
-    val bottomBarHeight = 120.dp
-    val bottomBarHeightPx = with(LocalDensity.current) { bottomBarHeight.roundToPx().toFloat() }
-    val bottomBarOffsetHeightPx = remember { mutableStateOf(0f) }
-
-    val nestedScrollConnection = remember {
-        object : NestedScrollConnection {
-            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                val delta = available.y
-                val newOffset = bottomBarOffsetHeightPx.value - delta
-                bottomBarOffsetHeightPx.value = newOffset.coerceIn(0f, bottomBarHeightPx)
-                return Offset.Zero
-            }
-        }
-    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -228,132 +262,170 @@ fun MainScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
-                .nestedScroll(nestedScrollConnection)
         ) {
-            val entryProvider = entryProvider {
-                entry<RouteHome> {
-                    currentRoute = RouteHome
-                    HomeScreen(
-                        onMenuClick = { coroutineScope.launch { drawerState.open() } },
-                        onAvatarClick = onAuthClick,
-                        onAlbumClick = { id, title ->
-                            currentRoute = RouteAlbumDetail(id, title)
-                            navigator.navigate(RouteAlbumDetail(id, title))
-                        },
-                        onArtistClick = { id, name ->
-                            currentRoute = RouteArtistDetail(id, name)
-                            navigator.navigate(RouteArtistDetail(id, name))
-                        },
-                        onArticleClick = { _ ->
-                            currentRoute = RouteAlbumDetail("vinyl_soul", "回响：寻找消失的黑胶灵魂")
-                            navigator.navigate(RouteAlbumDetail("vinyl_soul", "回响：寻找消失的黑胶灵魂"))
-                        }
-                    )
-                }
-
-                entry<RouteDiscover> {
-                    currentRoute = RouteDiscover
-                    DiscoverScreen(
-                        onMenuClick = { coroutineScope.launch { drawerState.open() } },
-                        onArtistClick = { id, name ->
-                            currentRoute = RouteArtistDetail(id, name)
-                            navigator.navigate(RouteArtistDetail(id, name))
-                        }
-                    )
-                }
-
-                entry<RouteLibrary> {
-                    currentRoute = RouteLibrary
-                    LibraryScreen()
-                }
-
-                entry<RouteArtistDetail> { key ->
-                    currentRoute = key
-                    ArtistDetailScreen(
-                        artistId = key.artistId,
-                        artistName = key.artistName,
-                        onBackClick = { navigator.goBack() },
-                        onAlbumClick = { id, title ->
-                            navigator.navigate(RouteAlbumDetail(id, title))
-                        },
-                        onPlayAllClick = {
-                            currentTrackTitle = "午后的回声"
-                            currentTrackArtist = key.artistName
-                            isPlaying = true
-                        }
-                    )
-                }
-
-                entry<RouteAlbumDetail> { key ->
-                    currentRoute = key
-                    AlbumDetailScreen(
-                        albumId = key.albumId,
-                        albumTitle = key.albumTitle,
-                        onBackClick = { navigator.goBack() },
-                        onTrackClick = { track ->
-                            currentTrackTitle = track.title
-                            currentTrackArtist = "周深处 & 森林合唱团"
-                            isPlaying = true
-                        },
-                        onPlayAllClick = {
-                            currentTrackTitle = "晨露中的第一道光"
-                            currentTrackArtist = "周深处 & 森林合唱团"
-                            isPlaying = true
-                        }
-                    )
-                }
-
-                entry<RouteMusicDetail> { key ->
-                    currentRoute = key
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "🎵 音乐详情 (Navigation 3)\n\n当前歌曲 ID: ${key.songId}",
-                            style = MaterialTheme.typography.headlineSmall
+            val entryProvider = remember {
+                entryProvider {
+                    entry<RouteHome> {
+                        HomeScreen(
+                            onMenuClick = { coroutineScope.launch { drawerState.open() } },
+                            onAvatarClick = onAuthClick,
+                            onAlbumClick = { id, title ->
+                                navigator.navigate(RouteAlbumDetail(id, title))
+                            },
+                            onArtistClick = { id, name ->
+                                navigator.navigate(RouteArtistDetail(id, name))
+                            },
+                            onArticleClick = { _ ->
+                                navigator.navigate(RouteAlbumDetail("vinyl_soul", "回响：寻找消失的黑胶灵魂"))
+                            }
                         )
+                    }
+
+                    entry<RouteDiscover> {
+                        DiscoverScreen(
+                            onMenuClick = { coroutineScope.launch { drawerState.open() } },
+                            onArtistClick = { id, name ->
+                                navigator.navigate(RouteArtistDetail(id, name))
+                            }
+                        )
+                    }
+
+                    entry<RouteLibrary> {
+                        LibraryScreen()
+                    }
+
+                    entry<RouteArtistDetail> { key ->
+                        ArtistDetailScreen(
+                            artistId = key.artistId,
+                            artistName = key.artistName,
+                            onBackClick = { navigator.goBack() },
+                            onAlbumClick = { id, title ->
+                                navigator.navigate(RouteAlbumDetail(id, title))
+                            },
+                            onPlayAllClick = {
+                                currentTrackTitle = "午后的回声"
+                                currentTrackArtist = key.artistName
+                                isPlaying = true
+                            }
+                        )
+                    }
+
+                    entry<RouteAlbumDetail> { key ->
+                        AlbumDetailScreen(
+                            albumId = key.albumId,
+                            albumTitle = key.albumTitle,
+                            onBackClick = { navigator.goBack() },
+                            onTrackClick = { track ->
+                                currentTrackTitle = track.title
+                                currentTrackArtist = "周深处 & 森林合唱团"
+                                isPlaying = true
+                            },
+                            onPlayAllClick = {
+                                currentTrackTitle = "晨露中的第一道光"
+                                currentTrackArtist = "周深处 & 森林合唱团"
+                                isPlaying = true
+                            }
+                        )
+                    }
+
+                    entry<RouteMusicDetail> { key ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "🎵 音乐详情 (Navigation 3)\n\n当前歌曲 ID: ${key.songId}",
+                                style = MaterialTheme.typography.headlineSmall
+                            )
+                        }
                     }
                 }
             }
 
-            NavDisplay(
-                entries = navigationState.toEntries(entryProvider),
-                onBack = { navigator.goBack() }
+            val hazeState = remember { HazeState() }
+
+            // 类似 YouTube 的滑动自适应智能感知：上滑下潜隐藏，下滑弹性浮现
+            var isBottomBarVisible by remember { mutableStateOf(true) }
+
+            val nestedScrollConnection = remember {
+                object : NestedScrollConnection {
+                    override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                        // available.y < -6f: 手指上滑（页面向下滚）-> 隐藏底栏
+                        // available.y > 6f: 手指下滑（页面向上滚）-> 显示底栏
+                        if (available.y < -6f && isBottomBarVisible) {
+                            isBottomBarVisible = false
+                        } else if (available.y > 6f && !isBottomBarVisible) {
+                            isBottomBarVisible = true
+                        }
+                        return Offset.Zero
+                    }
+                }
+            }
+
+            // 切换 Tab 或页面时自动唤醒并升起底栏
+            LaunchedEffect(navigationState.topLevelRoute) {
+                isBottomBarVisible = true
+            }
+
+            val bottomBarOffsetY by androidx.compose.animation.core.animateDpAsState(
+                targetValue = if (isBottomBarVisible) 0.dp else 110.dp,
+                animationSpec = androidx.compose.animation.core.spring(
+                    dampingRatio = androidx.compose.animation.core.Spring.DampingRatioLowBouncy,
+                    stiffness = androidx.compose.animation.core.Spring.StiffnessMediumLow
+                ),
+                label = "BottomBarScrollAnimation"
             )
 
-            // 全局悬浮组件区域（Capsule Dock）
-            Column(
+            Box(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .offset { IntOffset(x = 0, y = bottomBarOffsetHeightPx.value.roundToInt()) }
-                    .padding(bottom = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                    .fillMaxSize()
+                    .nestedScroll(nestedScrollConnection)
             ) {
-                // 1. 全局悬浮 Mini 播放器 (暂隐藏，后续定制样式)
-                /*
-                FloatingMiniPlayer(
-                    trackTitle = currentTrackTitle,
-                    artistName = currentTrackArtist,
-                    isPlaying = isPlaying,
-                    onPlayPauseClick = { isPlaying = !isPlaying },
-                    onPlayerClick = {
-                        navigator.navigate(RouteAlbumDetail("playing_album", currentTrackTitle))
-                    }
+                NavDisplay(
+                    entries = navigationState.toEntries(entryProvider),
+                    onBack = { navigator.goBack() },
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .hazeSource(state = hazeState)
                 )
-                */
 
-                // 2. 悬浮胶囊 Dock 底栏
-                MainBottomBar(
-                    currentRoute = currentRoute,
-                    onNavigate = { route ->
-                        currentRoute = route
-                        navigator.navigate(route as androidx.navigation3.runtime.NavKey)
-                    }
-                )
+                val density = LocalDensity.current
+                // 全局悬浮组件区域（Capsule Dock）- 使用 GPU 硬件变换矩阵 translationY，0 帧率重排开销
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 16.dp)
+                        .graphicsLayer {
+                            translationY = with(density) { bottomBarOffsetY.toPx() }
+                        },
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    // 1. 全局悬浮 Mini 播放器 (暂隐藏，后续定制样式)
+                    /*
+                    FloatingMiniPlayer(
+                        trackTitle = currentTrackTitle,
+                        artistName = currentTrackArtist,
+                        isPlaying = isPlaying,
+                        onPlayPauseClick = { isPlaying = !isPlaying },
+                        onPlayerClick = {
+                            navigator.navigate(RouteAlbumDetail("playing_album", currentTrackTitle))
+                        }
+                    )
+                    */
+
+                    // 2. 悬浮胶囊 Dock 底栏 (Compose 官方推荐 Haze 真实高斯模糊)
+                    MainBottomBar(
+                        currentRoute = navigationState.topLevelRoute,
+                        onNavigate = { route ->
+                            navigationState.topLevelRoute = route as androidx.navigation3.runtime.NavKey
+                            navigator.navigate(route as androidx.navigation3.runtime.NavKey)
+                        },
+                        hazeState = hazeState
+                    )
+                }
             }
 
         }

@@ -176,11 +176,15 @@ data class QuickActionItem(
 
 // ==================== 安全解析扩展方法 ====================
 
+object HomeJsonParser {
+    val gson: Gson = Gson()
+}
+
 inline fun <reified T> HomeBlockItem.getParsedData(): T? {
     if (parsedData is T) return parsedData
     if (data == null) return null
     return try {
-        Gson().fromJson(data, T::class.java)
+        HomeJsonParser.gson.fromJson(data, T::class.java)
     } catch (_: Exception) {
         null
     }

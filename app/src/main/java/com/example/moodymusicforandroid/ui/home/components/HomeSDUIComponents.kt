@@ -3,9 +3,9 @@ package com.example.moodymusicforandroid.ui.home.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -26,6 +26,23 @@ import com.example.moodymusicforandroid.R
 import com.example.moodymusicforandroid.data.model.*
 import com.example.moodymusicforandroid.ui.components.SongbookImage
 import com.example.moodymusicforandroid.ui.theme.SongbookColors
+
+// =========================================================================
+// 稳定颜色常量 — 避免在每次重组时调用 .copy(alpha=...) 生成新对象
+// (Color.copy 会创建新的 Color 实例，导致 Compose 无法跳过相等性判断,
+//  进而触发 Surface 重绘并在 GPU CommandIssue 阶段产生 40ms 阻塞)
+// =========================================================================
+private val BorderColorLight  = Color(0xFF9E9E9E).copy(alpha = 0.30f)  // OutlineVariant @ 0.30
+private val BorderColorMid    = Color(0xFF9E9E9E).copy(alpha = 0.35f)  // OutlineVariant @ 0.35
+private val BorderColorStrong = Color(0xFF9E9E9E).copy(alpha = 0.45f)  // OutlineVariant @ 0.45
+private val BorderColorImg    = Color(0xFF9E9E9E).copy(alpha = 0.40f)  // OutlineVariant @ 0.40
+private val BorderColorCircle = Color(0xFF9E9E9E).copy(alpha = 0.50f)  // OutlineVariant @ 0.50
+
+private val StableBorderTrack   = androidx.compose.foundation.BorderStroke(1.dp, BorderColorLight)
+private val StableBorderArtist  = androidx.compose.foundation.BorderStroke(1.dp, BorderColorMid)
+private val StableBorderArchive = androidx.compose.foundation.BorderStroke(1.dp, BorderColorStrong)
+private val StableBorderQuick   = androidx.compose.foundation.BorderStroke(1.dp, BorderColorMid)
+private val StableBorderTab     = androidx.compose.foundation.BorderStroke(0.8.dp, Color(0xFF9E9E9E).copy(alpha = 0.50f))
 
 // =========================================================================
 // 1. 栏目标题与期号切片 (SectionTitleBlock)
@@ -92,12 +109,14 @@ fun CategoryTabsBlock(
     modifier: Modifier = Modifier,
     onTabSelect: (String) -> Unit = {}
 ) {
-    LazyRow(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding = PaddingValues(horizontal = 2.dp)
+    val scrollState = rememberScrollState()
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .horizontalScroll(scrollState),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(data.tabs, key = { it.id }) { tab ->
+        data.tabs.forEach { tab ->
             val isSelected = tab.isSelected || tab.id == data.selectedId
             val containerColor = if (isSelected) {
                 SongbookColors.BurntOrange
@@ -116,10 +135,7 @@ fun CategoryTabsBlock(
                     .clickable { onTabSelect(tab.id) },
                 shape = RoundedCornerShape(16.dp),
                 color = containerColor,
-                border = if (!isSelected) androidx.compose.foundation.BorderStroke(
-                    0.8.dp,
-                    SongbookColors.OutlineVariant.copy(alpha = 0.5f)
-                ) else null
+                border = if (!isSelected) StableBorderTab else null
             ) {
                 Text(
                     text = tab.title,
@@ -176,7 +192,7 @@ fun ArtistGridBlock(
 }
 
 @Composable
-private fun ArtistGridCard(
+fun ArtistGridCard(
     artist: ArtistBlockItem,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
@@ -187,7 +203,7 @@ private fun ArtistGridCard(
             .clickable { onClick() },
         shape = RoundedCornerShape(8.dp),
         color = MaterialTheme.colorScheme.surfaceContainerLow,
-        border = androidx.compose.foundation.BorderStroke(1.dp, SongbookColors.OutlineVariant.copy(alpha = 0.35f))
+        border = StableBorderArtist
     ) {
         Row(
             modifier = Modifier
@@ -201,7 +217,7 @@ private fun ArtistGridCard(
                     .size(46.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                    .border(1.dp, SongbookColors.OutlineVariant.copy(alpha = 0.5f), CircleShape)
+                    .border(1.dp, BorderColorCircle, CircleShape)
                     .padding(1.5.dp)
             ) {
                 Box(modifier = Modifier.fillMaxSize().clip(CircleShape)) {
@@ -267,7 +283,7 @@ fun TrackListBlock(
 }
 
 @Composable
-private fun TrackListItemCard(
+fun TrackListItemCard(
     index: Int,
     track: TrackBlockItem,
     onClick: () -> Unit,
@@ -282,7 +298,7 @@ private fun TrackListItemCard(
             .clickable { onClick() },
         shape = RoundedCornerShape(6.dp),
         color = MaterialTheme.colorScheme.surfaceContainerLowest,
-        border = androidx.compose.foundation.BorderStroke(1.dp, SongbookColors.OutlineVariant.copy(alpha = 0.3f))
+        border = StableBorderTrack
     ) {
         Row(
             modifier = Modifier
@@ -391,7 +407,7 @@ fun ArchiveCardBlock(
             .clickable { onClick() },
         shape = RoundedCornerShape(8.dp),
         color = MaterialTheme.colorScheme.surfaceContainerLow,
-        border = androidx.compose.foundation.BorderStroke(1.dp, SongbookColors.OutlineVariant.copy(alpha = 0.45f))
+        border = StableBorderArchive
     ) {
         Column(
             modifier = Modifier
@@ -533,7 +549,7 @@ fun ImageFeatureBlock(
                 .aspectRatio(data.aspectRatio.coerceAtLeast(1f))
                 .clip(RoundedCornerShape(6.dp))
                 .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                .border(1.dp, SongbookColors.OutlineVariant.copy(alpha = 0.4f), RoundedCornerShape(6.dp))
+                .border(1.dp, BorderColorImg, RoundedCornerShape(6.dp))
         ) {
             SongbookImage(
                 model = data.imageUrl,
@@ -598,7 +614,7 @@ fun QuickActionsBlock(
                     .clickable { onActionClick(action) },
                 shape = RoundedCornerShape(8.dp),
                 color = MaterialTheme.colorScheme.surfaceContainerLow,
-                border = androidx.compose.foundation.BorderStroke(1.dp, SongbookColors.OutlineVariant.copy(alpha = 0.35f))
+                border = StableBorderQuick
             ) {
                 Column(
                     modifier = Modifier

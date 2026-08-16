@@ -1,6 +1,6 @@
-# MoodyMusicForAndroid
+# 音信 (TunePost)
 
-一个基于情绪推荐与同学互动场景的原生 Android 应用，采用 `Kotlin + XML(DataBinding) + MVVM`。
+一个基于情绪共鸣、原声手札与同学互动场景的原生 Android 应用，采用 `Kotlin + XML(DataBinding) + MVVM`。
 
 ## 项目概览
 

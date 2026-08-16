@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,31 +50,36 @@ fun HeroFeaturedCard(
                 .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                 .clickable { onReadArticleClick() }
         ) {
-            val matrix = ColorMatrix().apply {
-                setToSaturation(0.2f) // 经典黑白胶片感
+            val colorFilter = remember {
+                val matrix = ColorMatrix().apply {
+                    setToSaturation(0.2f) // 经典黑白胶片感
+                }
+                ColorFilter.colorMatrix(matrix)
             }
 
             SongbookImage(
                 model = imageUrl,
                 contentDescription = "回响：寻找消失的黑胶灵魂",
                 fallbackRes = R.drawable.hero_acoustic_guitar,
-                colorFilter = ColorFilter.colorMatrix(matrix),
+                colorFilter = colorFilter,
                 modifier = Modifier.fillMaxSize()
             )
 
-            // 底部柔和过渡渐变
+            // 底部柔和过渡渐变 - 使用 remember 避免每帧重新创建 Brush 对象
+            val surfaceColor = MaterialTheme.colorScheme.surface
+            val gradientBrush = remember(surfaceColor) {
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color.Transparent,
+                        Color.Transparent,
+                        surfaceColor.copy(alpha = 0.8f)
+                    )
+                )
+            }
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                Color.Transparent,
-                                MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
-                            )
-                        )
-                    )
+                    .background(gradientBrush)
             )
         }
 

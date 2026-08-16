@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -19,6 +20,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moodymusicforandroid.data.model.EssayItemData
 import com.example.moodymusicforandroid.ui.theme.SongbookColors
+import androidx.compose.ui.graphics.Color
+
+// 稳定颜色常量 - 避免在EssayItem每次重组时调用 .copy(alpha=...) 创建新Color对象
+private val EssayTimelineColor = Color(0xFFC84B30).copy(alpha = 0.25f) // BurntOrange @ 0.25
 
 /**
  * 兼容旧数据模型（别名）
@@ -84,46 +89,38 @@ private val defaultEssays = listOf(
 )
 
 @Composable
-private fun EssayItem(
+fun EssayItem(
     essay: EssayItemData,
     onClick: () -> Unit
 ) {
-    val timelineColor = SongbookColors.BurntOrange.copy(alpha = 0.25f)
+    val timelineColor = EssayTimelineColor
     val dotColor = SongbookColors.BurntOrange
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-    ) {
-        // 左侧时间线与圆点
-        Box(
-            modifier = Modifier
-                .width(24.dp)
-                .fillMaxHeight()
-        ) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
+            .drawBehind {
+                val startX = 6.dp.toPx()
                 // 绘制左侧垂直线
                 drawLine(
                     color = timelineColor,
-                    start = Offset(x = 6.dp.toPx(), y = 0f),
-                    end = Offset(x = 6.dp.toPx(), y = size.height),
+                    start = Offset(x = startX, y = 0f),
+                    end = Offset(x = startX, y = size.height),
                     strokeWidth = 1.dp.toPx()
                 )
                 // 绘制顶部起始圆点
                 drawCircle(
                     color = dotColor,
                     radius = 3.5.dp.toPx(),
-                    center = Offset(x = 6.dp.toPx(), y = 8.dp.toPx())
+                    center = Offset(x = startX, y = 8.dp.toPx())
                 )
             }
-        }
-
+            .padding(start = 24.dp)
+    ) {
         // 内容区域
         Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(start = 8.dp)
+            modifier = Modifier.fillMaxWidth()
         ) {
             // 发布日期 (All-caps)
             Text(

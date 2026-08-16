@@ -18,22 +18,9 @@ import com.example.moodymusicforandroid.R
  * 3. 标签/元数据 (Label) 采用大写加字间距 (tracking / letter spacing)。
  */
 
-val SongbookSerifFontFamily = FontFamily(
-    Font(R.font.source_han_serif_sc_regular, FontWeight.Normal),
-    Font(R.font.source_han_serif_sc_bold, FontWeight.Bold),
-    Font(R.font.source_han_serif_sc_bold, FontWeight.Black),
-    Font(R.font.source_han_serif_sc_regular, FontWeight.Normal, FontStyle.Italic)
-)
-
-val SongbookSansFontFamily = FontFamily(
-    Font(R.font.source_han_sans_sc_regular, FontWeight.Normal),
-    Font(R.font.source_han_sans_sc_bold, FontWeight.Bold),
-    Font(R.font.source_han_sans_sc_bold, FontWeight.SemiBold)
-)
-
-val SongbookHandwritingFontFamily = FontFamily(
-    Font(R.font.lxgw_wenkai_gb_regular, FontWeight.Normal)
-)
+val SongbookSerifFontFamily = FontFamily.Serif
+val SongbookSansFontFamily = FontFamily.SansSerif
+val SongbookHandwritingFontFamily = FontFamily.Serif
 
 val SongbookTypography = Typography(
     // 巨幅标题 (Display) - 艺术家巨幅立绘与刊头
