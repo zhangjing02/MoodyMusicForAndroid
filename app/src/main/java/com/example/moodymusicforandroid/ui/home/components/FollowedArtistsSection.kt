@@ -32,11 +32,11 @@ fun FollowedArtistsSection(
     onBrowseAllClick: () -> Unit = {}
 ) {
     val artists = listOf(
-        FollowedArtistItem("李健", "https://m-api.changgepd.top/storage/artists/artist_1.jpg", R.drawable.hero_acoustic_guitar),
-        FollowedArtistItem("陈绮贞", "https://m-api.changgepd.top/storage/artists/artist_beatrice.jpg", R.drawable.artist_beatrice),
-        FollowedArtistItem("万能青年旅店", "https://m-api.changgepd.top/storage/artists/artist_charlie.jpg", R.drawable.artist_charlie),
-        FollowedArtistItem("坂本龍一", "https://m-api.changgepd.top/storage/artists/artist_5.jpg", R.drawable.album_classical_piano),
-        FollowedArtistItem("落日飞车", "https://m-api.changgepd.top/storage/covers/albums/album__3_6.jpg", R.drawable.album_modern_jazz)
+        FollowedArtistItem("李健", "/storage/artists/artist_1.jpg", R.drawable.hero_acoustic_guitar),
+        FollowedArtistItem("陈绮贞", "/storage/artists/artist_beatrice.jpg", R.drawable.artist_beatrice),
+        FollowedArtistItem("万能青年旅店", "/storage/artists/artist_charlie.jpg", R.drawable.artist_charlie),
+        FollowedArtistItem("坂本龍一", "/storage/artists/artist_5.jpg", R.drawable.album_classical_piano),
+        FollowedArtistItem("落日飞车", "/storage/covers/albums/album__3_6.jpg", R.drawable.album_modern_jazz)
     )
 
     Column(modifier = modifier.fillMaxWidth()) {

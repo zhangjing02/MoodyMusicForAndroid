@@ -29,7 +29,7 @@ import com.example.moodymusicforandroid.ui.theme.SongbookColors
 @Composable
 fun HeroFeaturedCard(
     modifier: Modifier = Modifier,
-    imageUrl: String = "https://m-api.changgepd.top/storage/covers/hero/hero_acoustic_guitar.jpg",
+    imageUrl: String = "/storage/covers/hero/hero_acoustic_guitar.jpg",
     title: String = "回响：寻找消失的黑胶灵魂",
     tag: String = "深度专题 / DEEP DIVE",
     summary: String = "在数字化的浪潮中，我们如何通过物理的震动重新找回听觉的本真？这是一场跨越半个世纪的模拟信号寻访。",

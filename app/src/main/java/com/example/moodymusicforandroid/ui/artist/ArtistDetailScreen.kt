@@ -54,42 +54,42 @@ fun ArtistDetailScreen(
             id = "afternoon_echo",
             title = "午后的回声",
             yearAndTracks = "2024 • 12 TRACKS",
-            imageUrl = "https://m-api.changgepd.top/storage/covers/albums/album__2_8.jpg",
+            imageUrl = "/storage/covers/albums/album__2_8.jpg",
             fallbackRes = R.drawable.album_afternoon_echo
         ),
         ArtistAlbumItem(
             id = "wild_roam",
             title = "荒野散策",
             yearAndTracks = "2023 • 10 TRACKS",
-            imageUrl = "https://m-api.changgepd.top/storage/covers/albums/album__2_3.jpg",
+            imageUrl = "/storage/covers/albums/album__2_3.jpg",
             fallbackRes = R.drawable.album_wild_roam
         ),
         ArtistAlbumItem(
             id = "blue_monsoon",
             title = "蓝色季候风",
             yearAndTracks = "2022 • 14 TRACKS",
-            imageUrl = "https://m-api.changgepd.top/storage/covers/albums/album__2_4.jpg",
+            imageUrl = "/storage/covers/albums/album__2_4.jpg",
             fallbackRes = R.drawable.album_blue_monsoon
         ),
         ArtistAlbumItem(
             id = "forest_mist",
             title = "沉默的见证",
             yearAndTracks = "2021 • 8 TRACKS",
-            imageUrl = "https://m-api.changgepd.top/storage/covers/hero/hero_forest_mist.jpg",
+            imageUrl = "/storage/covers/hero/hero_forest_mist.jpg",
             fallbackRes = R.drawable.hero_forest_mist
         ),
         ArtistAlbumItem(
             id = "stone_poem",
             title = "石上的诗篇",
             yearAndTracks = "2020 • 11 TRACKS",
-            imageUrl = "https://m-api.changgepd.top/storage/covers/albums/album_electronic_vibes.jpg",
+            imageUrl = "/storage/covers/albums/album_electronic_vibes.jpg",
             fallbackRes = R.drawable.album_electronic_vibes
         ),
         ArtistAlbumItem(
             id = "rainy_talk",
             title = "雨夜谈话",
             yearAndTracks = "2019 • 13 TRACKS",
-            imageUrl = "https://m-api.changgepd.top/storage/covers/albums/album__2_7.jpg",
+            imageUrl = "/storage/covers/albums/album__2_7.jpg",
             fallbackRes = R.drawable.album_rainy_talk
         )
     )
@@ -139,7 +139,7 @@ fun ArtistDetailScreen(
                         .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                 ) {
                     SongbookImage(
-                        model = "https://m-api.changgepd.top/storage/artists/artist_abigail_chen.jpg",
+                        model = "/storage/artists/artist_abigail_chen.jpg",
                         contentDescription = artistName,
                         fallbackRes = R.drawable.artist_abigail_chen,
                         modifier = Modifier.fillMaxSize()

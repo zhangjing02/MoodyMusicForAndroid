@@ -46,7 +46,7 @@ fun EditorPicksGrid(
             title = "旷野之息",
             artist = "晨曦乐团",
             genre = "民谣复兴",
-            imageUrl = "https://m-api.changgepd.top/storage/covers/albums/album_forest_track.jpg",
+            imageUrl = "/storage/covers/albums/album_forest_track.jpg",
             fallbackRes = R.drawable.album_forest_track
         ),
         EditorPickItemData(
@@ -54,7 +54,7 @@ fun EditorPicksGrid(
             title = "午夜萨克斯",
             artist = "Blue Note Collective",
             genre = "暗色爵士",
-            imageUrl = "https://m-api.changgepd.top/storage/covers/albums/album_modern_jazz.jpg",
+            imageUrl = "/storage/covers/albums/album_modern_jazz.jpg",
             fallbackRes = R.drawable.album_modern_jazz
         ),
         EditorPickItemData(
@@ -62,7 +62,7 @@ fun EditorPicksGrid(
             title = "十二平均律",
             artist = "巴赫作品集",
             genre = "古典乐",
-            imageUrl = "https://m-api.changgepd.top/storage/covers/albums/album_classical_piano.jpg",
+            imageUrl = "/storage/covers/albums/album_classical_piano.jpg",
             fallbackRes = R.drawable.album_classical_piano
         ),
         EditorPickItemData(
@@ -70,7 +70,7 @@ fun EditorPicksGrid(
             title = "流动的静谧",
             artist = "静水深流",
             genre = "环境音",
-            imageUrl = "https://m-api.changgepd.top/storage/covers/albums/album_electronic_vibes.jpg",
+            imageUrl = "/storage/covers/albums/album_electronic_vibes.jpg",
             fallbackRes = R.drawable.album_electronic_vibes
         )
     )

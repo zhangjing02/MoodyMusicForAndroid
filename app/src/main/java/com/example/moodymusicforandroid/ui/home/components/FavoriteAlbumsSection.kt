@@ -27,10 +27,10 @@ fun FavoriteAlbumsSection(
     onAlbumClick: (String, String) -> Unit = { _, _ -> }
 ) {
     val collectedAlbums = listOf(
-        CollectedAlbumItem("冀西南林家铺子", "万能青年旅店 • 2020", "https://m-api.changgepd.top/storage/covers/albums/album_hebei_kirin.jpg", R.drawable.album_hebei_kirin),
-        CollectedAlbumItem("时间的歌", "陈绮贞 • 2013", "https://m-api.changgepd.top/storage/covers/albums/album_time_song.jpg", R.drawable.album_time_song),
-        CollectedAlbumItem("Bossa Nova", "落日飞车 • 2011", "https://m-api.changgepd.top/storage/covers/albums/album_modern_jazz.jpg", R.drawable.album_modern_jazz),
-        CollectedAlbumItem("12", "坂本龍一 • 2023", "https://m-api.changgepd.top/storage/covers/albums/album_blue_monsoon.jpg", R.drawable.album_blue_monsoon)
+        CollectedAlbumItem("冀西南林家铺子", "万能青年旅店 • 2020", "/storage/covers/albums/album_hebei_kirin.jpg", R.drawable.album_hebei_kirin),
+        CollectedAlbumItem("时间的歌", "陈绮贞 • 2013", "/storage/covers/albums/album_time_song.jpg", R.drawable.album_time_song),
+        CollectedAlbumItem("Bossa Nova", "落日飞车 • 2011", "/storage/covers/albums/album_modern_jazz.jpg", R.drawable.album_modern_jazz),
+        CollectedAlbumItem("12", "坂本龍一 • 2023", "/storage/covers/albums/album_blue_monsoon.jpg", R.drawable.album_blue_monsoon)
     )
 
     Column(modifier = modifier.fillMaxWidth()) {

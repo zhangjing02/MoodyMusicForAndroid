@@ -71,7 +71,7 @@ fun DiscoverScreen(
             initial = "A",
             genre = "爵士乐",
             albumCount = 12,
-            avatarUrl = "https://m-api.changgepd.top/storage/artists/artist_abigail_chen.jpg",
+            avatarUrl = "/storage/artists/artist_abigail_chen.jpg",
             fallbackRes = R.drawable.artist_abigail_chen
         ),
         DirectoryArtist(
@@ -80,7 +80,7 @@ fun DiscoverScreen(
             initial = "A",
             genre = "电子",
             albumCount = 8,
-            avatarUrl = "https://m-api.changgepd.top/storage/artists/artist_alan_walker.jpg",
+            avatarUrl = "/storage/artists/artist_alan_walker.jpg",
             fallbackRes = R.drawable.artist_alan_walker
         ),
         DirectoryArtist(
@@ -89,7 +89,7 @@ fun DiscoverScreen(
             initial = "B",
             genre = "古典",
             albumCount = 5,
-            avatarUrl = "https://m-api.changgepd.top/storage/artists/artist_beatrice.jpg",
+            avatarUrl = "/storage/artists/artist_beatrice.jpg",
             fallbackRes = R.drawable.artist_beatrice
         ),
         DirectoryArtist(
@@ -98,7 +98,7 @@ fun DiscoverScreen(
             initial = "C",
             genre = "民谣",
             albumCount = 15,
-            avatarUrl = "https://m-api.changgepd.top/storage/artists/artist_charlie.jpg",
+            avatarUrl = "/storage/artists/artist_charlie.jpg",
             fallbackRes = R.drawable.artist_charlie
         ),
         DirectoryArtist(
@@ -107,7 +107,7 @@ fun DiscoverScreen(
             initial = "L",
             genre = "民谣",
             albumCount = 9,
-            avatarUrl = "https://m-api.changgepd.top/storage/artists/artist_1.jpg",
+            avatarUrl = "/storage/artists/artist_1.jpg",
             fallbackRes = R.drawable.hero_acoustic_guitar
         ),
         DirectoryArtist(
@@ -116,7 +116,7 @@ fun DiscoverScreen(
             initial = "L",
             genre = "爵士乐",
             albumCount = 6,
-            avatarUrl = "https://m-api.changgepd.top/storage/covers/albums/album__3_6.jpg",
+            avatarUrl = "/storage/covers/albums/album__3_6.jpg",
             fallbackRes = R.drawable.album_modern_jazz
         ),
         DirectoryArtist(
@@ -125,7 +125,7 @@ fun DiscoverScreen(
             initial = "W",
             genre = "摇滚",
             albumCount = 2,
-            avatarUrl = "https://m-api.changgepd.top/storage/covers/albums/album_hebei_kirin.jpg",
+            avatarUrl = "/storage/covers/albums/album_hebei_kirin.jpg",
             fallbackRes = R.drawable.album_hebei_kirin
         ),
         DirectoryArtist(
@@ -134,7 +134,7 @@ fun DiscoverScreen(
             initial = "S",
             genre = "古典",
             albumCount = 24,
-            avatarUrl = "https://m-api.changgepd.top/storage/artists/artist_5.jpg",
+            avatarUrl = "/storage/artists/artist_5.jpg",
             fallbackRes = R.drawable.album_classical_piano
         )
     )

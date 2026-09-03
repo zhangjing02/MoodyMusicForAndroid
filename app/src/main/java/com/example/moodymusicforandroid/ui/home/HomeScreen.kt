@@ -325,7 +325,7 @@ private fun SocietyWeeklyTopBar(
                 .clickable { onAvatarClick() }
         ) {
             SongbookImage(
-                model = "https://m-api.changgepd.top/storage/avatars/user_avatar_default.jpg",
+                model = "/storage/avatars/user_avatar_default.jpg",
                 contentDescription = "User Avatar",
                 fallbackRes = R.drawable.user_avatar_default,
                 modifier = Modifier.fillMaxSize()

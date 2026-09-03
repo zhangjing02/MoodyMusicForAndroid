@@ -48,7 +48,7 @@ data class HeroBannerData(
     @SerializedName("title") val title: String = "回响：寻找消失的黑胶灵魂",
     @SerializedName("tag") val tag: String = "深度专题 / DEEP DIVE",
     @SerializedName("summary") val summary: String = "在数字化的浪潮中，我们如何通过物理的震动重新找回听觉的本真？这是一场跨越半个世纪的模拟信号寻访。",
-    @SerializedName("imageUrl") val imageUrl: String = "https://m-api.changgepd.top/storage/covers/hero/hero_acoustic_guitar.jpg",
+    @SerializedName("imageUrl") val imageUrl: String = "/storage/covers/hero/hero_acoustic_guitar.jpg",
     @SerializedName("articleId") val articleId: String = "vinyl_soul",
     @SerializedName("albumId") val albumId: String = "forest_echo",
     @SerializedName("albumTitle") val albumTitle: String = "林间碎影",
@@ -142,7 +142,7 @@ data class ArchiveCardData(
     @SerializedName("title") val title: String = "冀西南林家铺子",
     @SerializedName("subtitle") val subtitle: String = "万能青年旅店 • 2020",
     @SerializedName("description") val description: String? = "时代留声机：当代华语独立摇滚里程碑之作",
-    @SerializedName("imageUrl") val imageUrl: String = "https://m-api.changgepd.top/storage/covers/albums/album_hebei_kirin.jpg",
+    @SerializedName("imageUrl") val imageUrl: String = "/storage/covers/albums/album_hebei_kirin.jpg",
     @SerializedName("badge") val badge: String? = "典藏黑胶",
     @SerializedName("targetRoute") val targetRoute: String? = null
 )
@@ -151,7 +151,7 @@ data class ArchiveCardData(
  * 8. 杂志视觉大图数据
  */
 data class ImageFeatureData(
-    @SerializedName("imageUrl") val imageUrl: String = "https://m-api.changgepd.top/storage/covers/hero/hero_acoustic_guitar.jpg",
+    @SerializedName("imageUrl") val imageUrl: String = "/storage/covers/hero/hero_acoustic_guitar.jpg",
     @SerializedName("caption") val caption: String? = "静谧之声 / SOUND OF SILENCE",
     @SerializedName("author") val author: String? = "Photo by Songbook Studio",
     @SerializedName("aspectRatio") val aspectRatio: Float = 1.78f,

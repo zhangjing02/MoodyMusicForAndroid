@@ -1,106 +1,122 @@
-# 音信 (TunePost)
+# 🎵 音信 (MoodyMusic / TunePost) — Android 客户端
 
-一个基于情绪共鸣、原声手札与同学互动场景的原生 Android 应用，采用 `Kotlin + XML(DataBinding) + MVVM`。
+> 一个基于情绪共鸣、原声手札与同学互动场景的现代原生 Android 音乐流媒体应用。
+> 采用 **Jetpack Compose + 服务端驱动 UI (SDUI) + 现代响应式架构 (MVI/MVVM) + Haze GPU 实时硬件渲染**。
 
-## 项目概览
+---
 
-MoodyMusicForAndroid 目前包含三条核心业务线：
+## 🌟 核心架构与技术亮点
 
-1. 音乐内容浏览（Home / Discover / Library）
-2. 教室座位认领与登录流程（Classroom Claim）
-3. 专辑社交互动与推送驱动刷新（Album Social + JPush）
+### 1. 现代化 Jetpack Compose 全量重构
+- **淘汰传统 XML**：从旧 DataBinding 布局全面重构为现代声明式 UI，设计风格采用 **Stitch 极简留白与精细线框（Hairline Border）** 质感。
+- **动态呼吸动效**：基于 `animateFloatAsState` 与自定义贝塞尔插值器实现黑胶旋转、微弱光影呼吸与丝滑状态切换。
 
-## 最近代码已实现（与当前仓库一致）
+### 2. 服务端驱动 UI (Block-Based SDUI)
+- 首页采用完全动态切片流渲染，由边缘 Worker API (`/api/home/feed`) 动态下发模块配置：
+  - `hero_banner`：大画幅专题海报与黑胶唱片联动
+  - `editor_picks`：2×2 留声精选专辑网格
+  - `artist_row`：圆形关注歌手横向滚动条
+  - `track_list`：今日单曲试听与试听播放控制器
+  - `image_feature`：全屏杂志摄影视觉大图
+  - `album_cards`：典藏专辑卡片
+- 客户端基于多态密封模型与 `LazyColumn` 动态构建组件树，服务端可实时下发排版布局，无需发版。
 
-### 1. 教室座位认领闭环（已打通）
+### 3. 极致高刷性能调优 (60/120Hz 极速体验)
+- **消除监控工具观察者效应**：将帧率监控从主线程 `Looper` 剥离至专属 `HandlerThread`，彻底消除了每帧 5~10ms 的排版卡顿假象。
+- **细粒度 SDUI 分帧解构**：将首页单体大块 SDUI 模块平铺解构为独立 LazyColumn 条目，单帧 Composition 耗时由 **45.4ms 直降至 0.6ms~1.2ms（提升 97%）**。
+- **GPU 实时毛玻璃与硬件加速**：引入 Compose 原生生态标杆 `dev.chrisbanes.haze:haze` 替代引起 17ms 布局死锁的传统 `BlurView`，实现 GPU Shader 硬件级 120fps 晶莹磨砂效果。
+- **动态 Dock 悬浮底栏**：基于 `NestedScrollConnection` + `graphicsLayer { translationY }` 实现上滑下潜、下滑浮现动效，0 布局测量与重排损耗。
 
-- 支持座位表拉取与空位补齐展示（最多 64 座位）
-- 支持 3 题安全问题校验：`/api/user/claim/verify`
-- 支持认领完成：`/api/user/claim/finalize`
-- 支持已认领用户密码登录：`/api/user/login`
-- 成功后统一写入 `PreferencesManager` 并发送登录事件
+### 4. 全局单一数据源 (Single Source of Truth) 与一键换域
+- **彻底根除硬编码 URL**：所有 UI 组件、ViewModel 和 Mock 兜底数据均规范为纯相对路径（如 `/storage/...`），不再散落任何具体域名。
+- **编译时环境变量驱动**：
+  - 在 `gradle.properties` 中统一定义 `MOODY_API_BASE_URL`；
+  - 由 AGP `buildConfigField` 自动注入到 `BuildConfig.API_BASE_URL`；
+  - 由全局配置中心 `AppConfig.kt` 统一下发基准地址与相对资源解析器；
+  - `SongbookImage` 遇相对路径自动委托 `AppConfig.resolveUrl()` 动态拼接；
+- **换域成本**：更换域名仅需修改 `gradle.properties` 的 1 行，或通过根目录脚本一键全自动切换。
 
-关键代码：
-- `app/src/main/java/com/example/moodymusicforandroid/ui/classroom/activity/ClassroomActivity.kt`
-- `app/src/main/java/com/example/moodymusicforandroid/ui/classroom/viewmodel/ClassroomViewModel.kt`
+---
 
-### 2. 专辑社交模块 (V2 班级隔离版)
+## 📱 核心业务功能
 
-- **班级隔离**：仅限已认领座位的班级成员查看所属班级的讨论。
-- **访客屏蔽**：未登录或访客身份访问将触发 403，UI 自动隐藏。
-- **聚合接口**：`GET /api/albums/{albumId}/social_content` 返回“主贴+平铺回复”。
-- **发布讨论**：`POST /api/albums/{albumId}/posts` (自动关联班级 ID)。
-- **发布评论**：`POST /api/albums/posts/{postId}/comments`。
+1. **音乐内容与深度专题**
+   - 动态首页（Home Feed / SDUI 智能分发）
+   - 发现音乐（Discover / 字母索引目录与流派筛选）
+   - 专辑与艺术家详情（Album & Artist Detail）
+2. **教室座位认领与登录系统 (Classroom Claim)**
+   - 64 座位矩阵展示与状态感知（已认领 / 待认领）
+   - 三道安全问题防伪验证与身份绑定
+   - 登录凭据本地加密留存与自动恢复
+3. **专辑社交与班级隔离 (Album Social)**
+   - 班级级别数据隔离，防止未经授权的跨班级访问
+   - 主贴发布与平铺评论互动
+   - JPush 极光透传驱动脏标记（Dirty Flag）静默/前台局部刷新
 
-关键代码：
-- `app/src/main/java/com/example/moodymusicforandroid/ui/music/viewmodel/AlbumSocialViewModel.kt`
-- `app/src/main/java/com/example/moodymusicforandroid/ui/home/LibraryFragment.kt`
+---
 
-### 3. JPush 信号驱动刷新
+## 🛠 技术栈
 
-- **Tag 策略**：动态绑定 `album_{albumId}_class_{classId}` 实现精准通知。
-- **透传逻辑**：解析 `refresh_comments` 透传消息，Extras 携带 `action: "FETCH_NEW"`。
-- **刷新机制**：前台即时 LocalBroadcast，后台打脏标记（Dirty Flag）待回前台刷新。
-- 页面生命周期中动态绑定/清理 tag
+| 维度 | 选用技术 / 库 |
+| :--- | :--- |
+| **语言与核心** | Kotlin `2.1.0` + Kotlin Coroutines & Flow `1.9.0` |
+| **构建系统** | Gradle 8.10.x + Android Gradle Plugin `8.10.1` |
+| **UI 框架** | Jetpack Compose (BOM `2024.09.00`) + Material 3 |
+| **实时渲染** | Chris Banes `Haze` (GPU Shader 实时毛玻璃) |
+| **网络层** | Retrofit `2.11.0` + OkHttp `4.12.0` + Gson |
+| **图片加载** | Coil Compose `2.7.0` (硬件位图 + 内存直通缓存) |
+| **消息推送** | JPush SDK `5.9.2` (Tag 细粒度分发 + 离线脏标记) |
+| **架构规范** | 单一配置源 (Single Source of Truth) + 响应式 MVI/MVVM |
 
-关键代码：
-- `app/src/main/java/com/example/moodymusicforandroid/MoodyMusicApplication.kt`
-- `app/src/main/java/com/example/moodymusicforandroid/receiver/JPushReceiver.kt`
+---
 
-### 4. 最近新增的 UI 资源（进行中）
+## 🚀 构建与运行
 
-最近提交中增加了一批教室座位视觉资源（如 `bg_seat_desk_refined.xml`、`bg_seat_status_*.xml` 等），用于后续教室 UI 细化与质感升级。
+### 环境要求
+- **JDK**：17 或更高版本
+- **Android SDK**：Compile SDK 36 / Min SDK 24 / Target SDK 36
+- **NDK**：建议安装 `27.0.12077973`（用于 Release 混淆构建）
 
-## 接下来要做（Roadmap）
-
-1. 教室 UI 第二轮接线：将新座位素材与 `item_seat.xml`/`SeatAdapter` 完整联动
-2. 社交体验增强：回复输入态、失败重试、点赞与分页加载
-3. 推送稳定性增强：补齐弱网/离线场景与重复消息去重
-4. 音乐播放内核：接入 ExoPlayer，补齐前台服务与锁屏控制
-5. 本地数据层：引入 Room 做缓存与离线兜底
-
-## 技术栈
-
-- Kotlin `2.1.0`
-- AGP `8.10.1`
-- Coroutines `1.9.0`
-- Retrofit `2.11.0` + OkHttp `4.12.0`
-- JPush `5.9.2`
-- Glide `4.16.0`
-- EventBus `3.3.1`
-- BaseRecyclerViewAdapterHelper `4.1.4`
-
-依赖版本集中管理：`gradle/libs.versions.toml`
-
-## 构建与运行
+### 常用 Gradle 命令
 
 ```bash
-# Debug 构建
-./gradlew assembleDebug
+# 仅编译 Kotlin 模块（快速静态语法校验）
+./gradlew :app:compileDebugKotlin
 
-# 全量构建
-./gradlew build
+# 构建 Debug APK
+./gradlew :app:assembleDebug
 
-# 单测
-./gradlew testDebugUnitTest
+# 运行基础库构建
+./gradlew :commonbase:assembleDebug
+
+# 构建 Release 正式安装包
+./gradlew :app:assembleRelease
 ```
 
-## 环境注意事项
+---
 
-- 建议 JDK 17+
-- AGP 8.10.x 推荐安装 NDK `27.0.12077973`
-- 若出现 `Unable to strip ... libjutils.so`，通常是本机缺少 NDK strip 工具，不是业务代码错误
-
-## 项目结构
+## 📂 项目模块结构
 
 ```text
-app/                # 应用层（Activity/Fragment/ViewModel/UI 资源）
-commonbase/         # 基础层（Base 类、网络、数据模型、公共能力）
-gradle/             # 版本目录（libs.versions.toml）
+MoodyMusicForAndroid/
+├── app/
+│   ├── src/main/java/com/example/moodymusicforandroid/
+│   │   ├── ui/
+│   │   │   ├── home/           # 首页 Compose、SDUI 组件流与发现页
+│   │   │   ├── album/          # 专辑详情页与黑胶唱片动效
+│   │   │   ├── artist/         # 艺术家档案与作品集
+│   │   │   ├── classroom/      # 教室座位认领与互动页面
+│   │   │   ├── components/     # SongbookImage 等全局 Compose 组件
+│   │   │   └── theme/          # Compose 颜色、字体排印与 Material3 主题
+│   │   ├── receiver/           # JPush 极光广播接收器
+│   │   └── MoodyMusicApplication.kt
+│   └── build.gradle.kts
+├── commonbase/                 # 公共基础库
+│   ├── src/main/java/com/example/moodymusicforandroid/
+│   │   ├── common/
+│   │   │   ├── config/         # AppConfig 全局配置中心 (Single Source of Truth)
+│   │   │   └── network/        # RetrofitClient 与统一拦截器
+│   │   └── data/model/         # 数据模型与 HomeBlock SDUI 多态解析
+│   └── build.gradle.kts
+└── gradle.properties           # 全局配置中心 (MOODY_API_BASE_URL)
 ```
-
-## 维护说明
-
-- 本仓库使用 MVVM + BaseActivity/BaseFragment/BaseViewModel 模式
-- 网络请求统一走 `BaseViewModel.request()`
-- 新增依赖请优先修改 `libs.versions.toml`

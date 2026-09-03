@@ -44,7 +44,7 @@ fun FloatingMiniPlayer(
     modifier: Modifier = Modifier,
     trackTitle: String = "苔藓上的私语",
     artistName: String = "周深处 & 森林合唱团",
-    coverUrl: String = "https://m-api.changgepd.top/storage/covers/albums/album__1_2.jpg",
+    coverUrl: String = "/storage/covers/albums/album__1_2.jpg",
     isPlaying: Boolean = true,
     onPlayerClick: () -> Unit = {},
     onPlayPauseClick: () -> Unit = {},

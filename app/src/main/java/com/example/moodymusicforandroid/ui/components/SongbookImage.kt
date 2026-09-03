@@ -44,12 +44,8 @@ fun SongbookImage(
             is String -> {
                 if (model.isBlank()) {
                     fallbackRes
-                } else if (model.startsWith("http://") || model.startsWith("https://")) {
-                    model
-                } else if (model.startsWith("/")) {
-                    "https://m-api.changgepd.top$model"
                 } else {
-                    "https://m-api.changgepd.top/$model"
+                    com.example.moodymusicforandroid.common.config.AppConfig.resolveUrl(model)
                 }
             }
             null -> fallbackRes

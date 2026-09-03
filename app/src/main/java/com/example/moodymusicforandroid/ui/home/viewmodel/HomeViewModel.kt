@@ -3,6 +3,7 @@ package com.example.moodymusicforandroid.ui.home.viewmodel
 import androidx.lifecycle.viewModelScope
 import com.example.moodymusicforandroid.base.BaseViewModel
 import com.example.moodymusicforandroid.common.network.ApiServiceProvider
+import com.example.moodymusicforandroid.common.config.AppConfig
 import com.example.moodymusicforandroid.data.api.MoodyApiProvider
 import com.example.moodymusicforandroid.data.model.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -166,7 +167,7 @@ class HomeViewModel : BaseViewModel() {
                     title = "回响：寻找消失的黑胶灵魂",
                     tag = "深度专题 / DEEP DIVE",
                     summary = "在数字化的浪潮中，我们如何通过物理的震动重新找回听觉的本真？这是一场跨越半个世纪的模拟信号寻访。",
-                    imageUrl = "https://m-api.changgepd.top/storage/covers/hero/hero_acoustic_guitar.jpg",
+                    imageUrl = "/storage/covers/hero/hero_acoustic_guitar.jpg",
                     articleId = "vinyl_soul",
                     albumId = "forest_echo",
                     albumTitle = "林间碎影",
@@ -214,28 +215,28 @@ class HomeViewModel : BaseViewModel() {
                             name = "晨曦乐团",
                             genre = "民谣复兴",
                             albumCount = 4,
-                            avatarUrl = "https://m-api.changgepd.top/storage/covers/albums/album_forest_track.jpg"
+                            avatarUrl = "/storage/covers/albums/album_forest_track.jpg"
                         ),
                         ArtistBlockItem(
                             id = "artist_2",
                             name = "Blue Note Collective",
                             genre = "暗色爵士",
                             albumCount = 6,
-                            avatarUrl = "https://m-api.changgepd.top/storage/covers/albums/album_modern_jazz.jpg"
+                            avatarUrl = "/storage/covers/albums/album_modern_jazz.jpg"
                         ),
                         ArtistBlockItem(
                             id = "artist_3",
                             name = "巴赫作品集",
                             genre = "古典乐",
                             albumCount = 12,
-                            avatarUrl = "https://m-api.changgepd.top/storage/covers/albums/album_classical_piano.jpg"
+                            avatarUrl = "/storage/covers/albums/album_classical_piano.jpg"
                         ),
                         ArtistBlockItem(
                             id = "artist_4",
                             name = "静水深流",
                             genre = "环境音",
                             albumCount = 3,
-                            avatarUrl = "https://m-api.changgepd.top/storage/covers/albums/album_electronic_vibes.jpg"
+                            avatarUrl = "/storage/covers/albums/album_electronic_vibes.jpg"
                         )
                     )
                 )
@@ -264,8 +265,8 @@ class HomeViewModel : BaseViewModel() {
                             artist = "晨曦乐团",
                             album = "旷野之息",
                             duration = "04:12",
-                            coverUrl = "https://m-api.changgepd.top/storage/covers/albums/album_forest_track.jpg",
-                            audioUrl = "https://m-api.changgepd.top/storage/audio/demo1.mp3"
+                            coverUrl = "/storage/covers/albums/album_forest_track.jpg",
+                            audioUrl = AppConfig.resolveUrl("/storage/audio/demo1.mp3")
                         ),
                         TrackBlockItem(
                             id = "track_102",
@@ -273,8 +274,8 @@ class HomeViewModel : BaseViewModel() {
                             artist = "Blue Note Collective",
                             album = "午夜萨克斯",
                             duration = "05:38",
-                            coverUrl = "https://m-api.changgepd.top/storage/covers/albums/album_modern_jazz.jpg",
-                            audioUrl = "https://m-api.changgepd.top/storage/audio/demo2.mp3"
+                            coverUrl = "/storage/covers/albums/album_modern_jazz.jpg",
+                            audioUrl = AppConfig.resolveUrl("/storage/audio/demo2.mp3")
                         ),
                         TrackBlockItem(
                             id = "track_103",
@@ -282,8 +283,8 @@ class HomeViewModel : BaseViewModel() {
                             artist = "巴赫作品集",
                             album = "十二平均律",
                             duration = "02:45",
-                            coverUrl = "https://m-api.changgepd.top/storage/covers/albums/album_classical_piano.jpg",
-                            audioUrl = "https://m-api.changgepd.top/storage/audio/demo3.mp3"
+                            coverUrl = "/storage/covers/albums/album_classical_piano.jpg",
+                            audioUrl = AppConfig.resolveUrl("/storage/audio/demo3.mp3")
                         ),
                         TrackBlockItem(
                             id = "track_104",
@@ -291,8 +292,8 @@ class HomeViewModel : BaseViewModel() {
                             artist = "静水深流",
                             album = "流动的静谧",
                             duration = "06:20",
-                            coverUrl = "https://m-api.changgepd.top/storage/covers/albums/album_electronic_vibes.jpg",
-                            audioUrl = "https://m-api.changgepd.top/storage/audio/demo4.mp3"
+                            coverUrl = "/storage/covers/albums/album_electronic_vibes.jpg",
+                            audioUrl = AppConfig.resolveUrl("/storage/audio/demo4.mp3")
                         )
                     )
                 )
@@ -303,7 +304,7 @@ class HomeViewModel : BaseViewModel() {
                 id = "block_image_feature",
                 type = HomeBlockType.IMAGE_FEATURE,
                 parsedData = ImageFeatureData(
-                    imageUrl = "https://m-api.changgepd.top/storage/covers/hero/hero_acoustic_guitar.jpg",
+                    imageUrl = "/storage/covers/hero/hero_acoustic_guitar.jpg",
                     caption = "静谧之声 / SOUND OF SILENCE",
                     author = "Photo by Songbook Studio • 1974 模拟胶片复刻",
                     aspectRatio = 1.78f,
@@ -330,7 +331,7 @@ class HomeViewModel : BaseViewModel() {
                     title = "冀西南林家铺子",
                     subtitle = "万能青年旅店 • 2020",
                     description = "当代华语独立摇滚里程碑之作。在管乐与电声交织的迷宫中，记录华北大地的阵痛与诗意沉思。",
-                    imageUrl = "https://m-api.changgepd.top/storage/covers/albums/album_hebei_kirin.jpg",
+                    imageUrl = "/storage/covers/albums/album_hebei_kirin.jpg",
                     badge = "典藏黑胶",
                     targetRoute = "album_detail_hebei"
                 )

@@ -122,7 +122,7 @@ fun AlbumDetailScreen(
                         .height(380.dp)
                 ) {
                     SongbookImage(
-                        model = "https://m-api.changgepd.top/storage/covers/hero/hero_forest_mist.jpg",
+                        model = "/storage/covers/hero/hero_forest_mist.jpg",
                         contentDescription = "林间碎影",
                         fallbackRes = R.drawable.hero_forest_mist,
                         modifier = Modifier.fillMaxSize()

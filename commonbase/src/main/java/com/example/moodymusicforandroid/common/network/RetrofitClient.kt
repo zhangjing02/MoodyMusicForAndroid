@@ -20,9 +20,9 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
 
-    private const val BASE_URL_DEV = "http://127.0.0.1:8787/"
-    private const val BASE_URL_PROD = "https://m-api.changgepd.top/"
-    private const val BASE_URL = BASE_URL_PROD
+    private val BASE_URL_DEV = com.example.moodymusicforandroid.common.config.AppConfig.BASE_URL_DEV
+    private val BASE_URL_PROD = com.example.moodymusicforandroid.common.config.AppConfig.apiBaseUrl
+    private val BASE_URL = BASE_URL_PROD
 
     private const val CONNECT_TIMEOUT = 15L
     private const val READ_TIMEOUT = 30L
